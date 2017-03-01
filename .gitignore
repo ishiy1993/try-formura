@@ -1,5 +1,8 @@
 */a.out
 */*.c
 */*.h
+*/.stack-work/
+*/*.dat
 pearson/frames/
 pearson/shm/
+
