@@ -26,6 +26,7 @@ step :: String -> Double -> State -> State
 step "ftcs" = ftcs
 step "lax" = lax
 step "lax-wendroff" = laxWendroff
+step "upwind" = upwind
 step _ = error "No scheme"
 
 ftcs :: Double -> State -> State
@@ -49,6 +50,12 @@ laxWendroff nu xs = V.map (\(i,u) -> (i, u - nu*(uR i - uL i)/2 + nu*nu*(uR i - 
     where
         uR 99 = 0
         uR i = snd $ xs ! (i+1)
+        uL 0 = 1
+        uL i = snd $ xs ! (i-1)
+
+upwind :: Double -> State -> State
+upwind nu xs = V.map (\(i,u) -> (i, u - nu*(u - uL i))) xs
+    where
         uL 0 = 1
         uL i = snd $ xs ! (i-1)
 
