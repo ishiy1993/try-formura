@@ -25,6 +25,7 @@ buildInitialState x0 = generate 100 (\n -> if n < x0 then (n,1) else (n,0))
 step :: String -> Double -> State -> State
 step "ftcs" = ftcs
 step "lax" = lax
+step "lax-wendroff" = laxWendroff
 step _ = error "No scheme"
 
 ftcs :: Double -> State -> State
@@ -37,6 +38,14 @@ ftcs nu xs = V.map (\(i,u) -> (i, u - nu*(uR i - uL i)/2)) xs
 
 lax :: Double -> State -> State
 lax nu xs = V.map (\(i,u) -> (i, (uL i + uR i)/2 - nu*(uR i - uL i)/2)) xs
+    where
+        uR 99 = 0
+        uR i = snd $ xs ! (i+1)
+        uL 0 = 1
+        uL i = snd $ xs ! (i-1)
+
+laxWendroff :: Double -> State -> State
+laxWendroff nu xs = V.map (\(i,u) -> (i, u - nu*(uR i - uL i)/2 + nu*nu*(uR i - 2*u + uL i)/2)) xs
     where
         uR 99 = 0
         uR i = snd $ xs ! (i+1)
