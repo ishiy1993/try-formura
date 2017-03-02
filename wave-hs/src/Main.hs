@@ -7,16 +7,16 @@ import qualified Data.Vector as V
 main :: IO ()
 main = do
   let xs0 = buildInitialState 30
-      res = take 10 $ iterate (step 0.5) xs0
-  writeFile "out.dat" $ format res
+      resFTCS = take 10 $ iterate (ftcs 0.5) xs0
+  writeFile "data/ftcs-05.dat" $ format resFTCS
 
 type State = Vector (Int, Double)
 
 buildInitialState :: Int -> State
 buildInitialState x0 = generate 100 (\n -> if n < x0 then (n,1) else (n,0))
 
-step :: Double -> State -> State
-step nu xs = V.map (\(i,u) -> (i, u - nu*(uR i - uL i)/2)) xs
+ftcs :: Double -> State -> State
+ftcs nu xs = V.map (\(i,u) -> (i, u - nu*(uR i - uL i)/2)) xs
     where
         uR 99 = 0
         uR i = snd $ xs ! (i+1)
