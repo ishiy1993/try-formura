@@ -1,0 +1,14 @@
+dimension :: 1
+axes :: x
+
+double :: nu = 0.5
+
+dx = fun(u) (u[i+1] - u[i-1])/2
+
+begin function U = init()
+  double [] :: U = 1
+end function
+
+begin function U_next = step(U)
+  U_next = U - nu * dx U
+end function
