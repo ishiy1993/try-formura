@@ -1,0 +1,13 @@
+#!/usr/bin/zsh
+
+file=${1:?Need a filename}
+output=${file%.*}.pdf
+
+gnuplot -persist <<END
+set term pdf
+set output "$output"
+
+set style data linespoints
+
+plot "$file" index 0, "$file" index 1, "$file" index 2, "$file" index 3
+END
