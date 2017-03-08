@@ -4,9 +4,9 @@
 
 const int T_MAX = 13;
 
-extern Formura_Navigator navi;
+// extern Formura_Navigator navi;
 
-void init() {
+void init(Formura_Navigator &navi) {
   for(int x = navi.lower_x; x < navi.upper_x/2; ++x) {
     U[x] = 1.0;
   }
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
   FILE *fp = fopen("data/ftcs-0.5.dat", "w");
 
-  init();
+  init(navi);
   while(navi.time_step < T_MAX) {
     printf("t = %d\n", navi.time_step);
     for(int x = navi.lower_x; x < navi.upper_x; ++x) {
