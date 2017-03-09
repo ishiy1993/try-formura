@@ -5,4 +5,4 @@
 */*.dat
 pearson-fmr/frames/
 pearson-fmr/shm/
-*/data/
+*/data/*.dat
