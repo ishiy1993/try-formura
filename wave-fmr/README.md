@@ -2,6 +2,7 @@
 Support schemes:
 
 - FTCS
+- Lax
 - Lax-Wendroff
 - Upwind
 
