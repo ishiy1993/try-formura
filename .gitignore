@@ -3,6 +3,6 @@
 */*.h
 */.stack-work/
 */*.dat
-pearson/frames/
-pearson/shm/
+pearson-fmr/frames/
+pearson-fmr/shm/
 */data/
