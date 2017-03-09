@@ -6,7 +6,7 @@ double :: nu = 0.5
 dx = fun(u) (u[i+1] - u[i-1])/2
 
 begin function U = init()
-  double [] :: U = 1.0
+  double [] :: U = 0.0
 end function
 
 begin function U_next = step(U)

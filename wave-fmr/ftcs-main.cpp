@@ -27,6 +27,8 @@ int main(int argc, char **argv) {
     fprintf(fp, "\n\n");
     Formura_Forward(&navi);
   }
+
   fclose(fp);
+
   MPI_Finalize();
 }
