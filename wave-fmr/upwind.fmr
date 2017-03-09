@@ -1,0 +1,15 @@
+dimension :: 1
+axes :: x
+
+double :: nu = 0.5
+
+dx = fun(u) (u[i] - u[i-1])
+
+begin function U = init()
+  double [] :: U = 0.0
+end function
+
+begin function U_next = step(U)
+  U_next = U - nu * dx U
+end function
+
