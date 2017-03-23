@@ -5,6 +5,7 @@ Support schemes:
 - Lax
 - Lax-Wendroff
 - Upwind
+- MUSCL
 
 ```
 $ stack exec -- wave-hs ftcs 0.5
