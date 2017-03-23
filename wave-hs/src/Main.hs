@@ -27,6 +27,7 @@ step "ftcs" = ftcs
 step "lax" = lax
 step "lax-wendroff" = laxWendroff
 step "upwind" = upwind
+step "muscl" = muscl (-1)
 step _ = error "No scheme"
 
 ftcs :: Double -> State -> State
@@ -58,6 +59,24 @@ upwind nu xs = V.map (\(i,u) -> (i, u - nu*(u - uL i))) xs
     where
         uL 0 = 1
         uL i = snd $ xs ! (i-1)
+
+muscl :: Double -> Double -> State -> State
+muscl k nu xs = V.map (\(i,u) -> (i, u - nu*(f i - f (i-1)))) xs
+    where
+       f i = u i + ((1-k)*du' i + (1+k)*dU' i)/4
+       u i | i < 0 = 1
+           | i > 99 = 0
+           | otherwise = snd $ xs ! i
+       du i = u i - u (i-1)
+       dU i = u (i+1) - u i
+       du' i = du i `minmod` b*dU i
+       dU' i = dU i `minmod` b*du i
+       b = (3 - k) / (1 - k)
+
+minmod :: Double -> Double -> Double
+minmod a b | a*b <= 0 = 0
+           | otherwise = sign a * min (abs a) (abs b)
+    where sign x = x / abs x
 
 format :: [State] -> String
 format = unlines . intersperse "" . map (unlines . map (\(i,u) -> show i ++ " " ++ show u) . V.toList)
