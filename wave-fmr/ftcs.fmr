@@ -1,7 +1,7 @@
 dimension :: 1
 axes :: x
 
-double :: nu = 0.5
+double :: nu = _nu_
 
 dx = fun(u) (u[i+1] - u[i-1])/2
 

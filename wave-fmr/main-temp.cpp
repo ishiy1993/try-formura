@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <mpi.h>
-#include "ftcs.h"
+#include "_scheme_.h"
 
 const int T_MAX = 13;
 
@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
   Formura_Init(&navi, MPI_COMM_WORLD);
 
-  FILE *fp = fopen("data/ftcs-0.5.dat", "w");
+  FILE *fp = fopen("_output_", "w");
 
   init(navi);
   while(navi.time_step < T_MAX) {
@@ -32,3 +32,4 @@ int main(int argc, char **argv) {
 
   MPI_Finalize();
 }
+

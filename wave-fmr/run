@@ -1,0 +1,21 @@
+#!/bin/bash
+
+scheme=${1:?Need a scheme}
+nu=${2:-0.5}
+base=${scheme}-${nu}
+output=data/${base}.dat
+
+cat ${scheme}.fmr |
+sed "s/_nu_/${nu}/" > ${base}.fmr
+
+cp ${scheme}.yaml ${base}.yaml
+
+cat main-temp.cpp |
+sed "s;_scheme_;${base};"  |
+sed "s;_output_;${output};" > main.cpp
+
+/work/bin/formura ${base}.fmr
+mpicxx main.cpp ${base}.c ${base}_internal*.c
+mpirun -n 1 ./a.out
+
+rm ${base}* main.cpp a.out
