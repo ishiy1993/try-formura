@@ -18,4 +18,5 @@ sed "s;_output_;${output};" > main.cpp
 mpicxx main.cpp ${base}.c ${base}_internal*.c
 mpirun -n 1 ./a.out
 
-rm ${base}* main.cpp a.out
+rm ${base}*
+rm main.cpp a.out
