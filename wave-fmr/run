@@ -14,7 +14,7 @@ cat main-temp.cpp |
 sed "s;_scheme_;${base};"  |
 sed "s;_output_;${output};" > main.cpp
 
-/work/bin/formura ${base}.fmr
+formura ${base}.fmr
 mpicxx main.cpp ${base}.c ${base}_internal*.c
 mpirun -n 1 ./a.out
 
