@@ -4,12 +4,10 @@
 #include "shocktube.h"
 
 int mpi_my_rank;
-int T_MAX = 200;
-int T_MONITOR = 10;
+int T_MAX = 10;
+int T_MONITOR = 1;
 
-extern Formura_Navigator navi;
-
-void init() {
+void init(Formura_Navigator &navi) {
     int x0 = navi.upper_x/2;
     double rL = 1.0;
     double rR = 0.125;
@@ -18,22 +16,25 @@ void init() {
     double uL = 0;
     double uR = 0;
     double gamma = 1.4;
-    for(int ix = navi.lower_x; ix < x0; ++ix) {
+    for(int ix = navi.lower_x + navi.offset_x; ix < x0; ++ix) {
         r[ix] = rL;
-        r[ix+x0+1] = rR;
         m[ix] = rL*uL;
-        m[ix+x0+1] = rR*uR;
         e[ix] = rL*uL*uL/2 + pL/(gamma-1);
-        e[ix+x0+1] = rR*uR*uR/2 + pR/(gamma-1);
+    }
+    for(int ix = x0; ix < navi.upper_x; ++ix) {
+        r[ix] = rR;
+        m[ix] = rR*uR;
+        e[ix] = rR*uR*uR/2 + pR/(gamma-1);
     }
 }
 
 int main(int argc, char **argv) {
+    Formura_Navigator navi;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_my_rank);
     Formura_Init(&navi, MPI_COMM_WORLD);
 
-    init();
+    init(navi);
 
     while(navi.time_step < T_MAX) {
         if(navi.time_step % T_MONITOR == 0) {
