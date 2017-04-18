@@ -3,7 +3,7 @@ axes :: x
 
 double :: gamma = 1.4
 double :: dx = 1
-double :: dt = 1/2
+double :: dt = 0.3
 
 flux = fun((rho,mass,energy)) (mass, (gamma-1)*energy+(3-gamma)*mass**2/(rho*2), gamma*energy*mass/rho-(gamma-1)*mass**3/(2*rho**2))
 

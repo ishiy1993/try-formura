@@ -4,7 +4,7 @@
 #include "shocktube.h"
 
 int mpi_my_rank;
-int T_MAX = 30;
+int T_MAX = 300;
 int T_MONITOR = 1;
 
 void init(Formura_Navigator &navi) {
