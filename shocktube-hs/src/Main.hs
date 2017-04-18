@@ -1,17 +1,17 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 module Main where
 
-import Control.Monad (foldM_)
+import Control.Monad (foldM_, when)
 import qualified Data.Vector as V
 import Text.Printf
 
 gamma :: Double
 gamma = 1.4
 
-dt = 0.5
+dt = 0.3
 dx = 1.0
 xL = 0
-xR = 1000
+xR = 300
 densL = 1.0
 densR = 0.125
 massL = 0.0
@@ -28,10 +28,11 @@ initialState = V.generate (xR-xL+1) $ \i ->
 main :: IO ()
 main = do
     let ss = iterate step initialState
-    save 100 ss $ \i s -> do
-        putStrLn . unwords $ ["t","=",show i]
-        let f = printf "data/%02d.dat" i
-        writeFile f $ formatState s
+    save 1000 ss $ \i s -> do
+        when (i `mod` 10 == 0) $ do
+            putStrLn . unwords $ ["t","=",show i]
+            let f = printf "data/%03d.dat" i
+            writeFile f $ formatState s
         return $ i+1
 
 data Cell = Cell
@@ -77,7 +78,10 @@ flux (d,m,e) = (dF,mF,eF)
         eF = gamma*e*m/d - (gamma - 1)*m**3/(2*d**2)
 
 step :: State -> State
-step ss = V.map laxScheme ss
+step = lax
+
+lax :: State -> State
+lax ss = V.map laxScheme ss
     where
         laxScheme (Cell i _ _ _)
             | i == xL = Cell i densL massL engyL
@@ -89,6 +93,9 @@ step ss = V.map laxScheme ss
                     fR = flux qR
                     (d,m,e) = (qL |+| qR)|/2 |-| (dt/dx)*|(fR |-| fL)|/2
                  in Cell i d m e
+
+fds :: State -> State
+fds = undefined
 
 save :: Int -> [State] -> (Int -> State -> IO Int) -> IO ()
 save n ss act = foldM_ act 0 $ take n ss
