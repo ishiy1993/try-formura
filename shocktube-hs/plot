@@ -1,0 +1,9 @@
+#!/bin/bash
+
+file=${1:?Need a file name}
+
+gnuplot -p <<END
+  set xrange [400:600]
+  set style data linespoints
+  plot "${file}" u 1:2
+END
