@@ -5,19 +5,8 @@ import Control.Monad (foldM_, when)
 import qualified Data.Vector as V
 import Text.Printf
 
-gamma :: Double
-gamma = 1.4
-
-dt = 0.3
-dx = 1.0
-xL = 0
-xR = 300
-densL = 1.0
-densR = 0.125
-massL = 0.0
-massR = 0.0
-engyL = 2.5
-engyR = 0.25
+import Config
+import State
 
 initialState :: State
 initialState = V.generate (xR-xL+1) $ \i ->
@@ -35,17 +24,6 @@ main = do
             writeFile f $ formatState s
         return $ i+1
 
-data Cell = Cell
-    { id :: Int
-    , dens :: Double
-    , mass :: Double
-    , engy :: Double
-    }
-
-instance Show Cell where
-    show (Cell id d m e) = unwords [show id, show d, show m, show e]
-
-type State = V.Vector Cell
 type Vec = (Double, Double, Double)
 
 (|+|) :: Vec -> Vec -> Vec
@@ -64,9 +42,6 @@ infixl 7 *|
 (a1,a2,a3) |/ c = (a1/c,a2/c,a3/c)
 infixl 7 |/ 
 
-formatState :: State -> String
-formatState = unlines . V.toList . V.map show
-
 toVec :: Cell -> Vec
 toVec (Cell _ d m e) = (d,m,e)
 
@@ -76,6 +51,14 @@ flux (d,m,e) = (dF,mF,eF)
         dF = m
         mF = (gamma - 1)*e + (3 - gamma)*m**2/(2*d)
         eF = gamma*e*m/d - (gamma - 1)*m**3/(2*d**2)
+
+maxV :: State -> Double
+maxV = V.maximum . V.map calcV
+    where
+        calcV :: Cell -> Double
+        calcV (Cell _ d m e) = let u = m/d
+                                   p = (gamma-1)*(e - m**2/(2*d))
+                                in abs u + sqrt (gamma * p / d)
 
 step :: State -> State
 step = lax
@@ -91,6 +74,7 @@ lax ss = V.map laxScheme ss
                     qR = toVec $ ss V.! (i+1)
                     fL = flux qL
                     fR = flux qR
+                    dt = 0.4 * dx / maxV ss
                     (d,m,e) = (qL |+| qR)|/2 |-| (dt/dx)*|(fR |-| fL)|/2
                  in Cell i d m e
 
