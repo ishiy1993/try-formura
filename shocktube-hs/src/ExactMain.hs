@@ -38,7 +38,7 @@ main = do
           writeFile fn $ formatState es
 
 exactSolution :: Double -> State
-exactSolution t = V.generate (xR-xL+1) $ build t p
+exactSolution t = V.generate (10*(xR-xL+1)) $ build t p
     where p = solveP 3
 
 build :: Double -> Double -> Int -> Basic
@@ -49,7 +49,7 @@ build t p i
     | i' <= x0 + vs*t = Basic i dens2 velc2 pres2
     | otherwise = Basic i dens1 velc1 pres1
     where
-        i' = fromIntegral i
+        i' = fromIntegral i / 10
         x0 = fromIntegral (xR+xL)/2
         v' = (gamma+1)*vcd/2 - cL - (gamma-1)*velcL/2
         vcd = velc2
@@ -65,7 +65,7 @@ build t p i
         velc3 = velc2
         pres3 = pres2
         dens4 = densL*(pres4/presL)**(1/gamma)
-        velc4 = 2/(gamma+1) * ((i'-x0)/t + cL + (gamma-1)*cL/2)
+        velc4 = 2/(gamma+1) * ((i'-x0)/t + cL + (gamma-1)*velcL/2)
         pres4 = presL*(c4/cL)**(2*gamma/(gamma-1))
         dens5 = densL
         velc5 = velcL
