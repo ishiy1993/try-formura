@@ -1,0 +1,14 @@
+#!/bin/bash
+
+t=${1:?Need time}
+fmt=${2:-png}
+
+gnuplot -p <<END
+set term ${fmt}
+set output "img/${t}.${fmt}"
+set style data linespoints; set title "t=${t}"
+set xlabel "x"
+set ylabel "dens"
+
+plot "data/${t}.dat" u 1:2 title "numerical", "data/exact-${t}.dat" u 1:2 title "exact"
+END
