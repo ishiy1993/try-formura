@@ -17,7 +17,7 @@ initialState = V.generate (xR-xL+1) $ \i ->
 main :: IO ()
 main = do
     let ss = iterate step (0, initialState)
-    save 1000 ss $ \i s -> do
+    save 300 ss $ \i s -> do
         when (i `mod` 10 == 0) $ do
             let t = fst s
             putStrLn $ printf "i = %d, t = %f" i t
