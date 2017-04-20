@@ -12,7 +12,7 @@ data Cell = Cell
 instance Show Cell where
     show (Cell id d m e) = unwords [show id, show d, show m, show e]
 
-type State = V.Vector Cell
+type State = (Double, V.Vector Cell)
 
 formatState :: State -> String
-formatState = unlines . V.toList . V.map show
+formatState = unlines . V.toList . V.map show . snd

@@ -8,7 +8,7 @@ import Text.Printf
 import Config
 import State
 
-initialState :: State
+initialState :: V.Vector Cell
 initialState = V.generate (xR-xL+1) $ \i ->
     if i <= (xR+xL) `div` 2
        then Cell i densL massL engyL
@@ -16,11 +16,12 @@ initialState = V.generate (xR-xL+1) $ \i ->
 
 main :: IO ()
 main = do
-    let ss = iterate step initialState
+    let ss = iterate step (0, initialState)
     save 1000 ss $ \i s -> do
         when (i `mod` 10 == 0) $ do
-            putStrLn . unwords $ ["t","=",show i]
-            let f = printf "data/%03d.dat" i
+            let t = fst s
+            putStrLn $ printf "i = %d, t = %f" i t
+            let f = printf "data/%f.dat" t
             writeFile f $ formatState s
         return $ i+1
 
@@ -52,7 +53,7 @@ flux (d,m,e) = (dF,mF,eF)
         mF = (gamma - 1)*e + (3 - gamma)*m**2/(2*d)
         eF = gamma*e*m/d - (gamma - 1)*m**3/(2*d**2)
 
-maxV :: State -> Double
+maxV :: V.Vector Cell -> Double
 maxV = V.maximum . V.map calcV
     where
         calcV :: Cell -> Double
@@ -64,8 +65,10 @@ step :: State -> State
 step = lax
 
 lax :: State -> State
-lax ss = V.map laxScheme ss
+lax (t0, ss) = (t1, V.map laxScheme ss)
     where
+        dt = 0.4 * dx / maxV ss
+        t1 = t0 + dt
         laxScheme (Cell i _ _ _)
             | i == xL = Cell i densL massL engyL
             | i == xR = Cell i densR massR engyR
@@ -74,7 +77,6 @@ lax ss = V.map laxScheme ss
                     qR = toVec $ ss V.! (i+1)
                     fL = flux qL
                     fR = flux qR
-                    dt = 0.4 * dx / maxV ss
                     (d,m,e) = (qL |+| qR)|/2 |-| (dt/dx)*|(fR |-| fL)|/2
                  in Cell i d m e
 
