@@ -58,6 +58,50 @@ flux (d,m,e) = (dF,mF,eF)
         mF = (gamma - 1)*e + (3 - gamma)*m**2/(2*d)
         eF = gamma*e*m/d - (gamma - 1)*m**3/(2*d**2)
 
+type Matrix = V.Vector Double
+
+mkMatrix :: Vec -> Vec -> Matrix
+mkMatrix (dL,mL,eL) (dR,mR,eR) = r >*< l >*< r'
+    where
+        l = V.fromList [abs (u_-c_), 0, 0
+                       , 0, abs u_, 0
+                       , 0, 0, abs (u_+c_)]
+        r = V.fromList [ 1, 1, 1
+                       , u_-c_, u_, u_+c_
+                       , h_-u_*c_, u_**2/2, h_+u_*c_]
+        r' = V.fromList [ (b1+u_/c_)/2, -(1/c_+b2*u_)/2, b2/2
+                        , 1-b1, b2*u_, -b2
+                        , (b1-u_/c_)/2, (1/c_-b2*u_)/2, b2/2]
+        b1 = u_**2/2 * (gamma-1)/c_**2
+        b2 = (gamma-1)/c_**2
+        dL' = sqrt dL
+        dR' = sqrt dR
+        d_ = dL' * dR'
+        u_ = (uL*dL' + uR*dR')/(dL' + dR')
+        c_ = sqrt $ (gamma-1)*(h_ - u_**2/2)
+        h_ = (hL*dL' + hR*dR')/(dL' + dR')
+        uL = mL/dL
+        uR = mR/dR
+        pL = (gamma-1)*(eL-mL**2/2/dL)
+        pR = (gamma-1)*(eR-mR**2/2/dR)
+        hL = (eL+pL)/dL
+        hR = (eR+pR)/dR
+
+(>!) :: Matrix -> (Int,Int) -> Double
+m >! (i,j) = m V.! (3*i+j)
+
+(>*<) :: Matrix -> Matrix -> Matrix
+m1 >*< m2 = V.generate 9 $ \n ->
+    let i = n `div` 3
+        j = n `mod` 3
+     in sum $ map (\k -> m1 >! (i,k) * m2 >! (k,j)) [0..2]
+
+(>*|) :: Matrix -> Vec -> Vec
+m >*| (a0,a1,a2) = (b0, b1, b2)
+    where b0 = m >! (0,0) * a0 + m >! (0,1) * a1 + m >! (0,2) * a2
+          b1 = m >! (1,0) * a0 + m >! (1,1) * a1 + m >! (1,2) * a2
+          b2 = m >! (2,0) * a0 + m >! (2,1) * a1 + m >! (2,2) * a2
+
 maxV :: V.Vector Cell -> Double
 maxV = V.maximum . V.map calcV
     where
@@ -87,7 +131,26 @@ lax (t0, ss) = (t1, V.map laxScheme ss)
                  in Cell i d m e
 
 fds :: State -> State
-fds = undefined
+fds (t0, ss) = (t1, V.map next ss)
+    where
+        dt = 0.4 * dx / maxV ss
+        t1 = t0 + dt
+        next (Cell i d m e)
+            | i == xL = Cell i densL massL engyL
+            | i == xR = Cell i densR massR engyR
+            | otherwise =
+                let q = (d,m,e)
+                    qL = toVec $ ss V.! (i-1)
+                    qR = toVec $ ss V.! (i+1)
+                    f = q
+                    fL = flux qL
+                    fR = flux qR
+                    aL = mkMatrix qL q
+                    aR = mkMatrix q qR
+                    fL' = (f |+| fL |-| aL >*| (q |-| qL))|/2
+                    fR' = (fR |+| f |-| aR >*| (qR |-| q))|/2
+                    (d',m',e') = q |-| (dt/dx) *| (fR' |-| fL')
+                 in Cell i d' m' e'
 
 save :: Int -> [State] -> (Int -> State -> IO Int) -> IO ()
 save n ss act = foldM_ act 0 $ take n ss
