@@ -7,5 +7,5 @@ pearson-fmr/frames/
 pearson-fmr/shm/
 */data/*.dat
 2d-mhd/
-shocktube/shocktube
-shocktube/data/
+shocktube-fmr/shocktube
+shocktube-fmr/data/
