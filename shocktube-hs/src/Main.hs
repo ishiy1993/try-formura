@@ -2,7 +2,9 @@
 module Main where
 
 import Control.Monad (foldM_, when)
+import Data.Maybe
 import qualified Data.Vector as V
+import System.Environment (getArgs)
 import Text.Printf
 
 import Config
@@ -16,12 +18,15 @@ initialState = V.generate (xR-xL+1) $ \i ->
 
 main :: IO ()
 main = do
-    let ss = iterate step (0, initialState)
+    as <- getArgs
+    let scheme = fromMaybe "lax" $ listToMaybe as
+    putStrLn scheme
+    let ss = iterate (step scheme) (0, initialState)
     save 300 ss $ \i s -> do
         when (i `mod` 10 == 0) $ do
             let t = fst s
             putStrLn $ printf "i = %d, t = %f" i t
-            let f = printf "data/%f.dat" t
+            let f = printf "data/%s-%f.dat" scheme t
             writeFile f $ formatState s
         return $ i+1
 
@@ -61,8 +66,9 @@ maxV = V.maximum . V.map calcV
                                    p = (gamma-1)*(e - m**2/(2*d))
                                 in abs u + sqrt (gamma * p / d)
 
-step :: State -> State
-step = lax
+step :: String -> State -> State
+step "lax" = lax
+step "fds" = fds
 
 lax :: State -> State
 lax (t0, ss) = (t1, V.map laxScheme ss)
