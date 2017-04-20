@@ -1,14 +1,15 @@
 #!/bin/bash
 
-t=${1:?Need time}
-fmt=${2:-png}
+scheme=${1:?Need a scheme name}
+t=${2:?Need time}
+fmt=${3:-png}
 
 gnuplot -p <<END
 set term ${fmt}
-set output "img/${t}.${fmt}"
+set output "img/${scheme}-${t}.${fmt}"
 set style data linespoints; set title "t=${t}"
 set xlabel "x"
 set ylabel "dens"
 
-plot "data/${t}.dat" u 1:2 title "numerical", "data/exact-${t}.dat" u 1:2 title "exact"
+plot "data/${scheme}-${t}.dat" u 1:2 title "numerical(${scheme} scheme)", "data/exact-${t}.dat" u 1:2 title "exact"
 END
