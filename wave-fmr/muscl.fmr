@@ -5,24 +5,23 @@ double :: nu = _nu_
 double :: k = -1
 double :: b = (3-k)/(1-k)
 
-dx = fun(u) (u[i] - u[i-1])
-dx' = fun(u) (u[i+1] - u[i])
-
 sign = fun(x) if x > 0 then 1 else -1
 abs = fun(x) if x >= 0 then x else -x
 min = fun((x,y)) if x > y then y else x
 minmod = fun((a,b)) if a*b <= 0 then 0 else sign a * min (abs a, abs b)
+
+dx = fun(u) (u[i] - u[i-1])
+dx' = fun(u) (u[i+1] - u[i])
+d = fun(u) minmod (dx u, b*dx' u)
+d' = fun(u) minmod (dx' u, b*dx u)
+f = fun(u) u + ((1-k) * d u + (1+k) * d' u)/4
 
 begin function U = init()
   double [] :: U = 0.0
 end function
 
 begin function U_next = step(U)
-  U' = (fun(u) u[i-1]) U
-  d = fun(u) minmod (dx u, b*dx' u)
-  d' = fun(u) minmod (dx' u, b*dx u)
-  f = fun(u) u + ((1-k) * d u + (1+k) * d' u)/4
-  df = f U - f U'
+  df[i] = f U[i] - f U[i-1] + 0*f U[i+1]
   U_next = U - nu * df
 end function
 
