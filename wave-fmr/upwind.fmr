@@ -3,7 +3,7 @@ axes :: x
 
 double :: nu = _nu_
 
-dx = fun(u) (u[i] - u[i-1])
+dx = fun(u) (u[i] - u[i-1] + 0*u[i+1])
 
 begin function U = init()
   double [] :: U = 0.0
