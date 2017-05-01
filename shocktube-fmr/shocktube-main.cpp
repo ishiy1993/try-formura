@@ -16,12 +16,13 @@ void init(Formura_Navigator &navi) {
     double uL = 0;
     double uR = 0;
     double gamma = 1.4;
+    printf("%d %d %d\n", navi.lower_x, navi.upper_x, navi.offset_x);
     for(int ix = navi.lower_x + navi.offset_x; ix < x0; ++ix) {
         r[ix] = rL;
         m[ix] = rL*uL;
         e[ix] = rL*uL*uL/2 + pL/(gamma-1);
     }
-    for(int ix = x0; ix < navi.upper_x; ++ix) {
+    for(int ix = x0; ix < navi.upper_x - navi.offset_x; ++ix) {
         r[ix] = rR;
         m[ix] = rR*uR;
         e[ix] = rR*uR*uR/2 + pR/(gamma-1);
