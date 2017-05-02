@@ -28,6 +28,7 @@ step "lax" = lax
 step "lax-wendroff" = laxWendroff
 step "upwind" = upwind
 step "muscl" = muscl (-1)
+step "muscl4" = muscl4
 step _ = error "No scheme"
 
 ftcs :: Double -> State -> State
@@ -77,6 +78,36 @@ minmod :: Double -> Double -> Double
 minmod a b | a*b <= 0 = 0
            | otherwise = sign a * min (abs a) (abs b)
     where sign x = x / abs x
+
+muscl4 :: Double -> State -> State
+muscl4 nu xs = let xs1 = xs |-| df nu xs
+                   xs2 = xs |-| df (nu/2) xs1
+                   xs3 = xs |-| df (nu/3) xs2
+                in xs |-| df (nu/4) xs3
+    where
+       df a ys = V.map (\(i,u) -> (i, a*(f i - f (i-1)))) ys
+         where
+           f i = let d0 = du (i-1)
+                     d1 = du i
+                     d2 = du (i+1)
+                     -- d0' = minmod3 d0 (2*d1) (2*d2)
+                     -- d1' = minmod3 d1 (2*d2) (2*d0)
+                     -- d2' = minmod3 d2 (2*d0) (2*d1)
+                 -- in  u i + (d2'+d1')/4 - (d2'-2*d1'+d0')/12 + (d2'-d1')/24 + (d2'-2*d1'+d0')/288
+                 in  u i + (d2+d1)/4 - (d2-2*d1+d0)/12 + (d2-d1)/24 + (d2-2*d1+d0)/288
+           u i | i < 0 = 1
+               | i > 99 = 0
+               | otherwise = snd $ ys ! i
+           du i = u i - u (i-1)
+
+minmod3 :: Double -> Double -> Double -> Double
+minmod3 x y z = s * max 0 (minimum [abs x, s*y, s*z])
+    where s = x / abs x
+
+(|-|) :: State -> State -> State
+xs |-| ys = V.zipWith (\(i,x) (j,y) -> (i,x-y)) xs ys
+
+infixl 6 |-|
 
 format :: [State] -> String
 format = unlines . intersperse "" . map (unlines . map (\(i,u) -> show i ++ " " ++ show u) . V.toList)
