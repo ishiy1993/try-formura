@@ -48,6 +48,9 @@ infixl 7 *|
 (a1,a2,a3) |/ c = (a1/c,a2/c,a3/c)
 infixl 7 |/ 
 
+dot :: Vec -> Vec -> Double
+dot (a1,a2,a3) (b1,b2,b3) = a1*b1 + a2*b2 + a3*b3
+
 toVec :: Cell -> Vec
 toVec (Cell _ d m e) = (d,m,e)
 
@@ -113,6 +116,7 @@ maxV = V.maximum . V.map calcV
 step :: String -> State -> State
 step "lax" = lax
 step "fds" = fds
+step "muscl" = muscl
 
 lax :: State -> State
 lax (t0, ss) = (t1, V.map laxScheme ss)
@@ -151,6 +155,32 @@ fds (t0, ss) = (t1, V.map next ss)
                     fR' = (fR |+| f |-| aR >*| (qR |-| q))|/2
                     (d',m',e') = q |-| (dt/dx) *| (fR' |-| fL')
                  in Cell i d' m' e'
+
+muscl :: State -> State
+muscl (t0,ss) = (t1, next ss)
+    where
+        dt = 0.4 * dx / maxV ss
+        t1 = t0 + dt
+        sub = V.zipWith (\(Cell i d m e) (fd,fm,fe) -> Cell i (d-fd) (m-fm) (e-fe))
+        next st = let st1 = sub st $ df (dt/dx/4) st
+                      st2 = sub st $ df (dt/dx/3) st1
+                      st3 = sub st $ df (dt/dx/2) st2
+                  in  sub st $ df (dt/dx) st3
+            where
+                df a s = V.map (\(Cell i d m e) -> a *| dfs i) s
+                    where
+                        dfs i = f i |-| f (i-1)
+                        q i | i <= xL = (densL,massL,engyL)
+                            | i >= xR = (densR,massR,engyR)
+                            | otherwise = toVec $ s V.! i
+                        f i = let dq = q i |-| q (i-1)
+                                  dQ = q (i+1) |-| q i
+                                  ep = 10**(-6)
+                                  s = (2*dot dq dQ + ep)/(dot dq dq + dot dQ dQ + ep)
+                                  qL = q i |+| ((s/4) *| ((1-s/3)*|dq |+| (1+s/3)*|dQ))
+                                  qR = q (i+1) |-| ((s/4) *| ((1-s/3)*|dQ |+| (1+s/3)*|dq))
+                                  a = mkMatrix qL qR
+                              in (flux qR |+| flux qL |-| a >*| (qR |-| qL))|/2
 
 save :: Int -> [State] -> (Int -> State -> IO Int) -> IO ()
 save n ss act = foldM_ act 0 $ take n ss
