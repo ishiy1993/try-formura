@@ -2,14 +2,16 @@
 
 scheme=${1:?Need a scheme name}
 t=${2:?Need time}
-fmt=${3:-png}
+collum=${3:-2}
+fmt=${4:-png}
 
+ylb=$(echo ${collum} | awk '$1==2{print "dens"}$1==3{print "mass"}$1==4{print "energy"}')
 gnuplot -p <<END
 set term ${fmt}
-set output "img/${scheme}-${t}.${fmt}"
+set output "img/${scheme}-${t}-${collum}.${fmt}"
 set style data linespoints; set title "t=${t}"
 set xlabel "x"
-set ylabel "dens"
+set ylabel "${ylb}"
 
-plot "data/${scheme}-${t}.dat" u 1:2 title "numerical(${scheme} scheme)", "data/exact-${t}.dat" u 1:2 title "exact"
+plot "data/${scheme}-${t}.dat" u 1:$collum title "numerical(${scheme} scheme)", "data/exact-${t}.dat" u 1:$collum title "exact"
 END
