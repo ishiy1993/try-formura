@@ -80,7 +80,10 @@ data Basic = Basic
     }
 
 instance Show Basic where
-    show (Basic i d v p) = printf "%d %f %f %f" i d v p
+    show (Basic i d v p) = printf "%d %f %f %f %f %f %f" i d m e v p c
+        where m = d*v
+              e = p/(gamma-1) + d*v**2 / 2
+              c = sqrt $ gamma*p/d
 
 type State = V.Vector Basic
 
