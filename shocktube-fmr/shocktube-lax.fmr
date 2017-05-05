@@ -1,0 +1,23 @@
+dimension :: 1
+axes :: x
+
+double :: gamma = 1.4
+double :: dx = 1
+double :: dt = 0.3
+
+flux = fun((rho,mass,energy)) (mass, (gamma-1)*energy+(3-gamma)*mass**2/(rho*2), gamma*energy*mass/rho-(gamma-1)*mass**3/(2*rho**2))
+
+begin function (r, m, e) = init()
+    double [] :: r = 0, m = 0, e = 0
+end function
+
+begin function (r_next, m_next, e_next) = step(r, m, e)
+    Q = (r, m, e)
+    E = flux Q
+
+    Q_next[i] = (Q[i+1] + Q[i-1])/2 - (dt/dx) * (E[i+1] - E[i-1])/2
+
+    r_next = Q_next 0
+    m_next = Q_next 1
+    e_next = Q_next 2
+end function
