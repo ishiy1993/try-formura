@@ -7,6 +7,34 @@ double :: dt = 0.3
 
 flux = fun((rho,mass,energy)) (mass, (gamma-1)*energy+(3-gamma)*mass**2/(rho*2), gamma*energy*mass/rho-(gamma-1)*mass**3/(2*rho**2))
 
+abs = fun(x) if x >= 0 then x else -1 * x
+sum = fun(f) f 0 + f 1 + f 2
+vec = fun(f) (f 0, f 1, f 2)
+dot = fun(v,u) sum fun(i) (v i)*(u i)
+mul = fun(m, v) vec fun(i) dot((m i),v)
+mmul = fun(m1,m2) vec fun(i) (vec fun(j) (sum fun(k) (m1 i k)*(m2 k j)))
+
+begin function a = mkMatrix((dL,mL,eL),(dR,mR,eR))
+    dL' = dL**(1/2)
+    dR' = dR**(1/2)
+    uL = mL/dL
+    uR = mR/dR
+    pL = (gamma-1)*(eL-mL**2/2/dL)
+    pR = (gamma-1)*(eR-mR**2/2/dR)
+    hL = (eL+pL)/dL
+    hR = (eR+pR)/dR
+    d_ = dL' * dR'
+    u_ = (uL*dL' + uR*dR')/(dL' + dR')
+    h_ = (hL*dL' + hR*dR')/(dL' + dR')
+    c_ = ((gamma-1)*(h_ - u_**2/2))**(1/2)
+    b1 = u_**2/2 * (gamma-1)/c_**2
+    b2 = (gamma-1)/c_**2
+    l = ((abs (u_-c_), 0, 0), (0, abs u_, 0), (0, 0, abs (u_+c_)))
+    r = ((1, 1, 1), (u_-c_, u_, u_+c_), (h_-u_*c_, u_**2/2, h_+u_*c_))
+    r' = (((b1+u_/c_)/2, -(1/c_+b2*u_)/2, b2/2), (1-b1, b2*u_, -b2), ((b1-u_/c_)/2, (1/c_-b2*u_)/2, b2/2))
+    a = mmul(r,mmul(l,r'))
+end function
+
 begin function (r, m, e) = init()
     double [] :: r = 0, m = 0, e = 0
 end function
@@ -15,7 +43,8 @@ begin function (r_next, m_next, e_next) = step(r, m, e)
     Q = (r, m, e)
     E = flux Q
 
-    Q_next[i] = (Q[i+1] + Q[i-1])/2 - (dt/dx) * (E[i+1] - E[i-1])/2
+    f[i] = (E[i] + E[i-1] - mul(mkMatrix(Q[i-1],Q[i]),(Q[i] - Q[i-1])))/2
+    Q_next[i] = Q[i] - (dt/dx) * (f[i+1] - f[i])
 
     r_next = Q_next 0
     m_next = Q_next 1
