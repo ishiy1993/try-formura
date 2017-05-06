@@ -119,11 +119,11 @@ step "fds" = fds
 step "muscl" = muscl
 
 lax :: State -> State
-lax (t0, ss) = (t1, V.map laxScheme ss)
+lax (t0, ss) = (t1, V.map next ss)
     where
         dt = 0.4 * dx / maxV ss
         t1 = t0 + dt
-        laxScheme (Cell i _ _ _)
+        next (Cell i _ _ _)
             | i == xL = Cell i densL massL engyL
             | i == xR = Cell i densR massR engyR
             | otherwise =
