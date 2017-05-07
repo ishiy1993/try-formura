@@ -115,6 +115,8 @@ maxV = V.maximum . V.map calcV
 
 step :: String -> State -> State
 step "lax" = lax
+step "lax-wendroff" = laxWendroff
+step "maccormack" = macCormack
 step "fds" = fds
 step "muscl" = muscl
 
@@ -133,6 +135,33 @@ lax (t0, ss) = (t1, V.map next ss)
                     fR = flux qR
                     (d,m,e) = (qL |+| qR)|/2 |-| (dt/dx)*|(fR |-| fL)|/2
                  in Cell i d m e
+
+laxWendroff :: State -> State
+laxWendroff = undefined
+
+data Type = Forward | Backward
+
+macCormack :: State -> State
+macCormack (t0, ss) = (t1, next ss)
+    where
+        dt = 0.9 * dx / maxV ss
+        d = 0.2
+        t1 = t0 + dt
+        avg = V.zipWith (\(Cell i d m e) (Cell j d' m' e') -> Cell i ((d+d')/2) ((m+m')/2) ((e+e')/2))
+        sub = V.zipWith (\(Cell i d m e) (fd,fm,fe) -> Cell i (d-fd) (m-fm) (e-fe))
+        next st = let st1 = sub st $ df (dt/dx) Forward st
+                      st2 = sub (avg st st1) $ df (dt/dx/2) Backward st1
+                   in st2
+            where
+                df a ty s = V.map (\(Cell i d m e) -> a *| dfs ty i) s
+                    where
+                        dfs Forward i = f (i+1) |-| f i |-| viscosity i
+                        dfs Backward i = f i |-| f (i-1)
+                        q i | i <= xL = (densL,massL,engyL)
+                            | i >= xR = (densR,massR,engyR)
+                            | otherwise = toVec $ s V.! i
+                        f i = flux $ q i
+                        viscosity i = (d*dx)*|(q (i+1) |-| 2*|q i |+| q (i-1))
 
 fds :: State -> State
 fds (t0, ss) = (t1, V.map next ss)
