@@ -8,13 +8,13 @@ int T_MAX = 300;
 int T_MONITOR = 1;
 
 void init(Formura_Navigator &navi) {
-    int x0 = navi.upper_x/2;
+    int x0 = (navi.upper_x - navi.lower_x)/2;
     double rL = 1.0;
     double rR = 0.125;
     double pL = 1.0;
     double pR = 0.1;
-    double uL = 0;
-    double uR = 0;
+    double uL = 0.0;
+    double uR = 0.0;
     double gamma = 1.4;
     printf("%d %d %d\n", navi.lower_x, navi.upper_x, navi.offset_x);
     for(int ix = navi.lower_x + navi.offset_x; ix < x0; ++ix) {
