@@ -1,0 +1,25 @@
+dimension :: 1
+axes :: x
+
+double :: nu = _nu_
+
+d = fun(q) (0*q[i+1] + q[i] - q[i-1])
+d' = fun(q) (q[i+1] - q[i] + 0*q[i-1])
+
+begin function u_first = first_step(u)
+    u_first = u - nu*(d' u)
+end function
+
+begin function u_second = second_step(u, u_half)
+    u_second = (u+u_half)/2 - nu*(d u_half)/2
+end function
+
+begin function U = init()
+    double [] :: U = 0.0
+end function
+
+begin function U_next = step(U)
+    U_half = first_step(U)
+    U_next = second_step(U,U_half)
+end function
+

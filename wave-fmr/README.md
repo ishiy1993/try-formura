@@ -4,6 +4,7 @@ Support schemes:
 - FTCS
 - Lax
 - Lax-Wendroff
+- MacCormack
 - Upwind
 
 ## あそびかた
