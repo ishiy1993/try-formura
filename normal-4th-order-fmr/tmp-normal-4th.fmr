@@ -1,0 +1,34 @@
+dimension :: 1
+axes :: x
+
+double :: dx = _dx_
+double :: dt = _dt_
+double :: gamma = 1.4
+
+d = fun(q) (q[i-2] - 8*q[i-1] + 8*q[i+1] - q[i+2])/12/dx
+
+sum = fun(f) f 0 + f 1 + f 2
+vec = fun(f) (f 0, f 1, f 2)
+dot = fun(v,u) sum fun(i) (v i)*(u i)
+mul = fun(m, v) vec fun(i) dot((m i),v)
+
+begin function q' = rk4(f, q)
+    q1 = q + dt/4 * f q
+    q2 = q + dt/3 * f q1
+    q3 = q + dt/2 * f q2
+    q' = q + dt * f q3
+end function
+
+begin function (db, du, dp) = update(b, u, p)
+    M = ((u, -b, 0), (0, u, b), (0, gamma*p, u))
+    (db, du, dp) = - mul(M,d (b, u, p))
+end function
+
+begin function (b, u, p) = init()
+    double :: dx = 1.0, dt = 0.1 
+    double [] :: b = 0, u = 0, p = 0
+end function
+
+begin function (b', u', p') = step(b, u, p)
+    (b', u', p') = rk4(update, (b, u, p))
+end function
