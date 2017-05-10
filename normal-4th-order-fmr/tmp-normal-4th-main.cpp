@@ -13,7 +13,7 @@ double u0 = 0.1;
 double p0 = 1.0;
 
 double dens(double x, double t) {
-    double x0 = 30.0*dx;
+    double x0 = 50.0*dx;
     double a = 10.0*dx;
     return 1.0 + exp(-pow((t*u0 - (x - x0))/a*a,2));
 }
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
         if(navi.time_step % T_MONITOR == 0) {
             printf("t = %d\n", navi.time_step);
             char fn[256];
-            sprintf(fn, "data/%f-%f-%03d.dat", dx, dt, navi.time_step);
+            sprintf(fn, "data/%f-%f-%04d.dat", dx, dt, navi.time_step);
             FILE *fp = fopen(fn, "w");
             for(int x = navi.lower_x; x < navi.upper_x; ++x) {
                 double t = navi.time_step * dt;
