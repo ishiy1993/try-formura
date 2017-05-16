@@ -1,0 +1,10 @@
+#!/bin/bash
+
+NX=${1:?Need grid number}
+logfile=${2:-log}
+errordata=${3:-mass-error.dat}
+
+echo "NX =" ${NX}
+sed -i "/intra_node_shape/s;\[.*\];[${NX}];" normal-4th.yaml && \
+    make run | tee -a ${logfile} | tail -1 | tee -a ${errordata} && \
+    make clean

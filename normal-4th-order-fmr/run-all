@@ -1,0 +1,27 @@
+#!/bin/zsh
+
+logfile=log
+errordata=mass-error.dat
+errorimg=img/mass-error.png
+
+make clean
+rm -f ${log} ${errordata}
+
+docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000
+
+gnuplot <<END
+    set term png
+    set output "${errorimg}"
+
+    set logscale x
+    set logscale y
+
+    f(x) = a*x**b
+    a = 1
+    b = 4
+    fit f(x) "${errordata}" u 1:4 via a,b
+
+    plot "${errordata}" u 1:4 with linespoints, f(x)
+END
+
+cp2server ${errorimg}

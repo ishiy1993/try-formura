@@ -1,0 +1,12 @@
+#!/bin/bash
+
+./run 100 ${log} ${errordata}
+./run 200 ${log} ${errordata}
+./run 300 ${log} ${errordata}
+./run 400 ${log} ${errordata}
+./run 500 ${log} ${errordata}
+./run 600 ${log} ${errordata}
+./run 700 ${log} ${errordata}
+./run 800 ${log} ${errordata}
+./run 900 ${log} ${errordata}
+./run 1000 ${log} ${errordata}
