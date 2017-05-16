@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
                 fprintf(fp, "%f %f %f %f %f %f %f\n", x, b[ix], u[ix], p[ix], dens(x,t), u0, p0);
                 sum_dens += 1/b[ix];
             }
-            printf("%f %f %f %f\n", dx, tm, sum_dens*dx, fabs(tm - sum_dens*dx));
+            printf("%f %f %f %e\n", dx, tm, sum_dens*dx, fabs(tm - sum_dens*dx));
             fclose(fp);
         }
         Formura_Forward(&navi);
