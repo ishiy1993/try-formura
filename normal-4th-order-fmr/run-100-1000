@@ -1,5 +1,8 @@
 #!/bin/bash
 
+log=$1
+errordata=$2
+
 ./run 100 ${log} ${errordata}
 ./run 200 ${log} ${errordata}
 ./run 300 ${log} ${errordata}
