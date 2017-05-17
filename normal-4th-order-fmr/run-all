@@ -1,40 +1,35 @@
 #!/bin/zsh
 
+CFL=${1:-0.1}
 logfile=log
-errordata=mass-error.dat
-errorimg=img/mass-error.pdf
+masserrordata=mass-error-${CFL}.dat
+masserrorimg=img/mass-error-${CFL}.pdf
+maxerrordata=max-error-${CFL}.dat
+maxerrorimg=img/max-error-${CFL}.pdf
 
 make clean
-rm -f ${log} ${errordata}
+rm -f ${log} ${masserrordata} ${maxerrordata}
 
-docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000
+sed -i "s/dt = .*/dt = ${CFL}*dx/" normal-4th.fmr
+sed -i "s/dt = .*/dt = ${CFL}*dx;/" normal-4th-main.cpp
+grep "dt =" normal-4th.fmr normal-4th-main.cpp
 
-gnuplot <<END
-    set term pdf
-    set output "${errorimg}"
+docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000 ${logfile} ${masserrordata}
 
-    set logscale x
-    set logscale y
-
-    set format y "%.1E"
-
-    set xlabel "dx"
-    set ylabel "total mass error"
-
-    f(x) = a*x**b
-    a = 1
-    b = 4
-    fit f(x) "${errordata}" u 1:4 via a,b
-
-    plot "${errordata}" u 1:4 with linespoints, 5*10**(-7)*x**4, 0.5*x**10
-END
-
-cp2server ${errorimg}
+massfactor=$(awk '/^0.10/{print $4}' ${masserrordata})
+ploton --xl dx --yl "total mass error" --yf "%.1E" --logx --logy \
+       --output "${masserrorimg}" \
+       "\$1 u 1:4 with linespoints, ${massfactor}*(x/0.1)**4, ${massfactor}*(x/0.1)**8" ${masserrordata} |
+xargs cp2server
 
 ls data/* | grep "100.dat" | xargs grep "." |
 awk '{print $1,sqrt(($5-$2)^2)/$5}' |
 tr ':' ' ' | sed 's;.*/;;' | sed 's/-.*dat//' |
 awk '{if(a[$1] < $3){a[$1]=$3}}END{for(k in a){printf("%f %e\n", 100/k,a[k])}}' |
-sort -k1,1n > max-error.dat
+sort -k1,1n > ${maxerrordata}
 
-ploton --xl dx --yl "maximum relative error" --logx --logy '$1 u 1:2 with linespoints, 0.06*x**4, 0.6*x**5' max-error.dat | xargs cp2server
+maxfactor=$(awk '/^0.10/{print $2}' ${maxerrordata})
+ploton --xl dx --yl "maximum relative error" --yf "%.1E" --logx --logy \
+       --output "${maxerrorimg}" \
+       "\$1 u 1:2 with linespoints, ${maxfactor}*(x/0.1)**4, ${maxfactor}*(x/0.1)**5" ${maxerrordata} |
+xargs cp2server
