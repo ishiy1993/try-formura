@@ -1,7 +1,7 @@
 #include <math.h>
 
-int T_MAX = 101;
-int T_MONITOR = 100;
+int T_MAX = 1001;
+int T_MONITOR = 1000;
 
 double velc(double x, double t) {
     double u0 = 0.1;
@@ -15,6 +15,6 @@ double pres(double x, double t) {
 
 double dens(double x, double t) {
     double x0 = 50.0;
-    double a = 30.0;
-    return 1.0 + exp(-pow((t*velc(x,t) - (x - x0))/a*a,2));
+    double a = 10.0;
+    return 1.0 + exp(-pow((t*velc(x,t) - (x - x0))/a,2));
 }
