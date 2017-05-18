@@ -1,8 +1,9 @@
 TARGET = normal-4th
+PROBLEM = gauss
 N = 1
 
 $(TARGET): $(TARGET)-main.cpp $(TARGET).c
-	mpicxx $(TARGET)-main.cpp $(TARGET).c $(TARGET)_internal_*.c -o $@
+	mpicxx $(TARGET)-main.cpp $(PROBLEM).c $(TARGET).c $(TARGET)_internal_*.c -o $@
 
 $(TARGET).c: $(TARGET).fmr $(TARGET).yaml
 	formura $(TARGET).fmr

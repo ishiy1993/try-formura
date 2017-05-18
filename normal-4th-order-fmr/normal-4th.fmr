@@ -1,8 +1,9 @@
 dimension :: 1
 axes :: x
 
+double :: cfl = 0.1
 double :: dx = 100/NX
-double :: dt = 0.1*dx
+double :: dt = cfl*dx
 double :: gamma = 1.4
 
 d = fun(q) (q[i-2] - 8*q[i-1] + 8*q[i+1] - q[i+2])/12/dx
