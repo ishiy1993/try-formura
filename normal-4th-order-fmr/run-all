@@ -2,38 +2,49 @@
 
 problem=gauss
 CFL=${1:-0.1}
+id=${problem}-${CFL}
+errorfile=data/${id}-1000.err
+tmerrorimg=img/tm-error-${id}.pdf
+reerrorimg=img/re-error-${id}.pdf
+l1errorimg=img/l1-error-${id}.pdf
+l2errorimg=img/l2-error-${id}.pdf
 logfile=log
-masserrordata=mass-error-${problem}-${CFL}.dat
-masserrorimg=img/mass-error-${problem}-${CFL}.pdf
-maxerrordata=max-error-${problem}-${CFL}.dat
-maxerrorimg=img/max-error-${problem}-${CFL}.pdf
 
 make clean
-rm -f ${log} ${masserrordata} ${maxerrordata}
+rm -f ${log}
 
 sed -i "s/PROBLEM = .*/PROBLEM = ${problem}/" Makefile
 sed -i "5c #include \"${problem}.h\"" normal-4th-main.cpp
 sed -i "s/cfl = .*/cfl = ${CFL}/" normal-4th.fmr
 sed -i "s/cfl = .*/cfl = ${CFL};/" normal-4th-main.cpp
-head Makefile normal-4th-main.cpp
+head -5 normal-4th-main.cpp
 grep "cfl =" normal-4th.fmr normal-4th-main.cpp
 
-docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000 ${logfile} ${masserrordata}
+docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000 ${logfile}
 
-massfactor=$(awk '/^0.10/{print $4}' ${masserrordata})
+tmfactor=$(awk '/^1.0/{print $2}' ${errorfile})
 ploton --xl dx --yl "total mass error" --yf "%.1E" --logx --logy \
-       --output "${masserrorimg}" \
-       "#1 u 1:4 with linespoints, ${massfactor}*(x/0.1)**4, ${massfactor}*(x/0.1)**8" ${masserrordata} |
+       --output "${tmerrorimg}" \
+       "#1 u 1:2 with linespoints, ${tmfactor}*x**4, ${tmfactor}*x**10" ${errorfile} |
 xargs cp2server
 
-ls data/* | grep "${problem}-${CFL}-.*-100.dat" | xargs grep '^.*$' |
-awk '{print $1,sqrt(($2-$5)**2)/$5}' |
-tr ':' ' ' | sed "s/^.*${problem}-${CFL}-//" | sed 's/-100.dat//' |
-awk '{if(a[$1] < $3){a[$1]=$3}}END{for(k in a){printf("%f %e\n", 100/k,a[k])}}' |
-sort -k1,1n > ${maxerrordata}
-
-maxfactor=$(awk '/^0.10/{print $2}' ${maxerrordata})
+refactor0=$(awk '/^0.10/{print $3}' ${errorfile})
+refactor1=$(awk '/^1.0/{print $3}' ${errorfile})
 ploton --xl dx --yl "maximum relative error" --yf "%.1E" --logx --logy \
-       --output "${maxerrorimg}" \
-       "#1 u 1:2 with linespoints, ${maxfactor}*(x/0.1)**4, ${maxfactor}*(x/0.1)**5" ${maxerrordata} |
+       --output "${reerrorimg}" \
+       "#1 u 1:3 with linespoints, ${refactor1}*x**4, ${refactor0}*(x/0.1)**4" ${errorfile} |
+xargs cp2server
+
+l1factor0=$(awk '/^0.10/{print $4}' ${errorfile})
+l1factor1=$(awk '/^1.0/{print $4}' ${errorfile})
+ploton --xl dx --yl "l1 norm of error" --yf "%.1E" --logx --logy \
+       --output "${l1errorimg}" \
+       "#1 u 1:4 with linespoints, ${l1factor1}*x**4, ${l1factor0}*(x/0.1)**4" ${errorfile} |
+xargs cp2server
+
+l2factor0=$(awk '/^0.10/{print $5}' ${errorfile})
+l2factor1=$(awk '/^1.0/{print $5}' ${errorfile})
+ploton --xl dx --yl "l2 norm of error" --yf "%.1E" --logx --logy \
+       --output "${l2errorimg}" \
+       "#1 u 1:5 with linespoints, ${l2factor1}*x**8, ${l2factor0}*(x/0.1)**8" ${errorfile} |
 xargs cp2server
