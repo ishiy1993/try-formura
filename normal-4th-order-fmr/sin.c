@@ -16,7 +16,7 @@ double pres(double x, double t) {
 double dens(double x, double t) {
     double B0 = 1.0;
     double B1 = 0.5;
-    double k = 1.0;
-    return B0 + B1*sin(-k*(x-velc(x,t)*t))
+    double k = 2*M_PI/50.0;
+    return B0 + B1*sin(-k*(x-velc(x,t)*t));
 }
 
