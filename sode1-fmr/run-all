@@ -46,5 +46,5 @@ l1_xfactor0=$(awk '/^0.10/{print $5}' ${errorfile})
 l1_xfactor1=$(awk '/^1.0/{print $5}' ${errorfile})
 ploton --xl dx --yl "l1_x norm of error" --yf "%.1E" --logx --logy \
        --output "${l1_xerrorimg}" \
-       "#1 u 1:5 with linespoints, ${l1_xfactor1}*x**8, ${l1_xfactor0}*(x/0.1)**8" ${errorfile} |
+       "#1 u 1:5 with linespoints, ${l1_xfactor1}*x**4, ${l1_xfactor0}*(x/0.1)**4" ${errorfile} |
 xargs cp2server
