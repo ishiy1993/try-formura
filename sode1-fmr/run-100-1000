@@ -1,0 +1,14 @@
+#!/bin/bash
+
+log=$1
+
+./run 100 ${log}
+./run 200 ${log}
+./run 300 ${log}
+./run 400 ${log}
+./run 500 ${log}
+./run 600 ${log}
+./run 700 ${log}
+./run 800 ${log}
+./run 900 ${log}
+./run 1000 ${log}

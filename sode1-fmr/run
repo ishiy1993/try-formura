@@ -1,0 +1,9 @@
+#!/bin/bash
+
+NX=${1:?Need grid number}
+logfile=${2:-log}
+
+echo "NX =" ${NX}
+sed -i "/intra_node_shape/s;\[.*\];[${NX}];" sode1.yaml && \
+    make run | tee -a ${logfile} && \
+    make clean

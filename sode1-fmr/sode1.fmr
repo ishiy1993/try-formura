@@ -1,0 +1,94 @@
+dimension :: 1
+axes :: x
+
+double :: cfl = 0.1
+double :: dx = 100/NX
+double :: dt = cfl*dx
+double :: gm = 1.4
+
+d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - dx*(a_x[i+1] - a_x[i-1])/4)/dx/dx
+d_xxx = fun(a_x) (a_x[i+1] + a_x[i-1] - 2*a_x[i])/dx/dx
+
+begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x))
+    b_t = -(u*b_x - b*u_x)
+    u_t = -(u*u_x + b*p_x)
+    p_t = -(gm*p*u_x + u*p_x)
+end function
+
+begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x))
+    b_xx = d_xx(b,b_x)
+    u_xx = d_xx(u,u_x)
+    p_xx = d_xx(p,p_x)
+
+    b_tt = u*u*b_xx - 2*b*u*u_xx - b*b*p_xx
+    u_tt = 2*u*u_x*u_x + u*u*u_xx + 2*b_x*u*p_x + 2*b*u*p_xx + (gm+1)*b*u_x*p_x + gm*b*u_xx*p
+    p_tt = gm*gm*u_x*u_x*p + gm*u*u_x*p_x + gm*b_xx*u*p - gm*b*u_xx*p + b_x*u*p_x - b*u_x*p_x + (gm+1)*u*u_x*p_x + gm*u*u_xx*p + u*u*p_xx
+end function
+
+begin function (b_xt,u_xt,p_xt) = d_xt((b,u,p),(b_x,u_x,p_x))
+    b_xx = d_xx(b,b_x)
+    u_xx = d_xx(u,u_x)
+    p_xx = d_xx(p,p_x)
+
+    b_xt = -(u*b_xx - b*u_xx)
+    u_xt = -(u_x*u_x + u*u_xx + b_x*p_x + b*p_xx)
+    p_xt = -(gm*u_xx*p + (gm+1)*u_x*p_x + u*p_xx)
+end function
+
+begin function (b_xtt,u_xtt,p_xtt) = d_xtt((b,u,p),(b_x,u_x,p_x))
+    b_xx = d_xx(b,b_x)
+    u_xx = d_xx(u,u_x)
+    p_xx = d_xx(p,p_x)
+    b_xxx = d_xxx(b_x)
+    u_xxx = d_xxx(u_x)
+    p_xxx = d_xxx(p_x)
+
+    b_xtt = 2*u*u_x*b_xx + u*u*b_xxx - 2*b_x*u*u_xx - 2*b*u_x*u_xx - 2*b*u*u_xxx - 2*b*b_x*p_xx - b*b*p_xxx
+    u_xtt = 2*u_x*u_x*u_x + 6*u*u_x*u_xx - u*u*u_xxx + 2*b_xx*u*p_x + (gm+3)*b_x*u_x*p_x + 4*b_x*u*p_xx + (gm+3)*b*u_x*p_xx + 2*b*u*p_xxx + (2*gm+1)*b*u_xx*p_x + gm*b_x*u_xx*p * gm*b*u_xxx*p
+    p_xtt = gm*(2*gm+1)*u_x*u_xx*p + (gm+1)*(gm+1)*u_x*u_x*p_x + (3*gm+1)*u*u_xx*p_x + (2*gm+3)*u*u_x*p_xx + gm*u*u_xxx*p + u*u*p_xxx + gm*b_xxx*u*p + gm*b_xx*u_x*p + (gm+1)*b_xx*u*p_x - gm*b_x*u_xx*p - gm*b*u_xxx*p - (gm+1)*b*u_xx*p_x + b_x*u*p_xx - b*u_x*p_xx
+end function
+
+begin function init() \
+  returns (b, u, p, b_x, u_x, p_x, \
+           bp, up, pp, bp_x, up_x, pp_x, \
+           bh, uh, ph, bh_x, uh_x, ph_x)
+
+    double [] :: b = 0, u = 0, p = 0, b_x = 0, u_x = 0, p_x = 0, \
+                 bp = 0, up = 0, pp = 0, bp_x = 0, up_x = 0, pp_x = 0, \
+                 bh = 0, uh = 0, ph = 0, bh_x = 0, uh_x = 0, ph_x = 0
+end function
+
+begin function step(b, u, p, b_x, u_x, p_x, \
+                    bp, up, pp, bp_x, up_x, pp_x, \
+                    bh, uh, ph, bh_x, uh_x, ph_x) \
+  returns (b', u', p', b_x', u_x', p_x', \
+           bp', up', pp', bp_x', up_x', pp_x', \
+           bh', uh', ph', bh_x', uh_x', ph_x')
+
+    q = (b,u,p)
+    q_x = (b_x,u_x,p_x)
+    qp = (bp,up,pp)
+    qp_x = (bp_x,up_x,pp_x)
+    qh = (bh,uh,ph)
+    qh_x = (bh_x,uh_x,ph_x)
+
+    q_t = d_t(qp,qp_x)
+    q_tt = d_tt(qp,qp_x)
+    q_xt = d_xt(qp,qp_x)
+    q_xtt = d_xtt(qp,qp_x)
+
+    q' = qh + dt*q_t/2 - dt*dt*q_tt/12
+    (b',u',p') = q'
+    q_x' = qh_x + dt*q_xt/2 - dt*dt*q_xtt/12
+    (b_x',u_x',p_x') = q_x'
+
+    qp' = q' + dt*q_t + dt*dt*q_tt/2
+    (bp',up',pp') = qp'
+    qp_x' = q_x' + dt*q_xt + dt*dt*q_xtt/2
+    (bp_x',up_x',pp_x') = qp_x'
+
+    qh' = q' + dt*q_t/2 + dt*dt*q_tt/12
+    (bh',uh',ph') = qh'
+    qh_x' = q_x' + dt*q_xt/2 + dt*dt*q_xtt/12
+    (bh_x',uh_x',ph_x') = qh_x'
+end function
