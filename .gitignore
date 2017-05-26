@@ -20,3 +20,7 @@ normal-4th-order-fmr/*log
 !normal-4th-order-fmr/sin.h
 !normal-4th-order-fmr/shock.c
 !normal-4th-order-fmr/shock.h
+!sode1-fmr/gauss.c
+!sode1-fmr/gauss.h
+!sode1-fmr/sin.c
+!sode1-fmr/sin.h
