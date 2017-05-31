@@ -1,6 +1,6 @@
 #include <math.h>
 
-int T_MAX = 101;
+int T_MAX = 1001;
 int T_MONITOR = 100;
 
 double u0 = 0.1;
