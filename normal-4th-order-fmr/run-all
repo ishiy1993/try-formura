@@ -11,7 +11,7 @@ l2errorimg=img/l2-error-${id}.pdf
 logfile=log
 
 make clean
-rm -f ${log}
+rm -f ${log} ${errorfile}
 
 sed -i "s/PROBLEM = .*/PROBLEM = ${problem}/" Makefile
 sed -i "5c #include \"${problem}.h\"" normal-4th-main.cpp
