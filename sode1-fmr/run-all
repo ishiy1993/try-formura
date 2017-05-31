@@ -2,8 +2,9 @@
 
 problem=gauss
 CFL=${1:-0.1}
-id=${problem}-${CFL}
-errorfile=data/${id}-100.err
+step=${2:-100}
+id=${problem}-$(echo ${CFL} | awk '{printf("%f",$1)}')
+errorfile=data/${id}-${step}.err
 tmerrorimg=img/tm-error-${id}.pdf
 reerrorimg=img/re-error-${id}.pdf
 l1errorimg=img/l1-error-${id}.pdf
