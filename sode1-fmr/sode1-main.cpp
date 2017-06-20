@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
             double l1_x = 0;
 
             char fn[256];
-            sprintf(fn, "data/%s-%.1f-%d-%d.dat", problem, cfl, NX, navi.time_step);
+            sprintf(fn, "data/%s-%f-%d-%d.dat", problem, cfl, NX, navi.time_step);
             FILE *fp = fopen(fn, "w");
 
             double sum_dens = 0;
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 
             if(navi.time_step > 0) {
                 char efn[256];
-                sprintf(efn, "data/%s-%.1f-%d.err", problem, cfl, navi.time_step);
+                sprintf(efn, "data/%s-%f-%d.err", problem, cfl, navi.time_step);
                 FILE *efp = fopen(efn, "a");
                 fprintf(efp, "%f %e %e %e %e\n", dx, fabs(tm-sum_dens*dx), mre, l1, l1_x);
                 fclose(efp);
