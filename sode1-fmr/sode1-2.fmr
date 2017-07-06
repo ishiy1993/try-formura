@@ -1,0 +1,229 @@
+dimension :: 2
+axes :: x,y
+
+double :: cfl = 0.05
+double :: h = 100/NX
+double :: dt = cfl*h
+double :: gm = 1.4
+
+d_xx = fun(a,a_x,a_y) 2*(a[i+1,j] + a[i-1,j] - 2*a[i,j] - h*(a_x[i+1,j] - a_x[i-1,j])/4)/h/h
+d_xy = fun(a,a_x,a_y) (a[i+1,j+1] + a[i-1,j-1] - a[i+1,j-1] - a[i-1,j+1])/2/h/h - (a_x[i+1,j+1] - a_x[i-1,j-1] - a_x[i+1,j-1] + a_x[i-1,j+1] + a_y[i+1,j+1] - a_y[i-1,j-1] + a_y[i+1,j-1] - a_y[i-1,j+1])/8/h
+d_yy = fun(a,a_x,a_y) 2*(a[i,j+1] + a[i,j-1] - 2*a[i,j] - h*(a_y[i,j+1] - a_y[i,j-1])/4)/h/h
+d_xxx = fun(a,a_x,a_y) (a_x[i+1,j] + a_x[i-1,j] - 2*a_x[i,j])/h/h
+d_xxy = fun(a,a_x,a_y) (a_y[i+1,j] + a_y[i-1,j] - 2*a_y[i,j])/h/h
+d_xyy = fun(a,a_x,a_y) (a_x[i,j+1] + a_x[i,j-1] - 2*a_x[i,j])/h/h
+d_yyy = fun(a,a_x,a_y) (a_y[i,j+1] + a_y[i,j-1] - 2*a_y[i,j])/h/h
+
+begin function (b_t,u_t,v_t,p_t) = d_t((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_t = ((b * (u_x + v_y)) - ((b_x * u) + (b_y * v)))
+u_t = (-(((u * u_x) + (v * u_y)) + (b * p_x)))
+v_t = (-(((u * v_x) + (v * v_y)) + (b * p_y)))
+p_t = (-((((gm * p) * (u_x + v_y)) + (u * p_x)) + (v * p_y)))
+end function
+
+begin function (b_tt,u_tt,v_tt,p_tt) = d_tt((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_xx = d_xx(b,b_x,b_y)
+b_xy = d_xy(b,b_x,b_y)
+b_yy = d_yy(b,b_x,b_y)
+u_xx = d_xx(u,u_x,u_y)
+u_xy = d_xy(u,u_x,u_y)
+u_yy = d_yy(u,u_x,u_y)
+v_xx = d_xx(v,v_x,v_y)
+v_xy = d_xy(v,v_x,v_y)
+v_yy = d_yy(v,v_x,v_y)
+p_xx = d_xx(p,p_x,p_y)
+p_xy = d_xy(p,p_x,p_y)
+p_yy = d_yy(p,p_x,p_y)
+b_tt = (((((((((((((((-(2.0 * ((b * u) * u_xx))) - (2.0 * ((b * u) * v_xy))) + (2.0 * ((b * u_x) * v_y))) - (2.0 * ((b * u_xy) * v))) - (2.0 * ((b * u_y) * v_x))) - (2.0 * ((b * v) * v_yy))) - ((b * b) * p_xx)) - ((b * b) * p_yy)) - (2.0 * ((b_x * u) * v_y))) + (2.0 * ((b_x * u_y) * v))) + (2.0 * ((b_xy * u) * v))) + ((b_xx * u) * u)) + (2.0 * ((b_y * u) * v_x))) - (2.0 * ((b_y * u_x) * v))) + ((b_yy * v) * v))
+u_tt = (((((((((((((((((((((b * gm) * p) * u_xx) + (((b * gm) * p) * v_xy)) + (((b * gm) * p_x) * u_x)) + (((b * gm) * p_x) * v_y)) + ((b * p_x) * u_x)) - ((b * p_x) * v_y)) + (2.0 * ((b * p_xy) * v))) + (2.0 * ((b * p_xx) * u))) + ((b * p_y) * u_y)) + ((b * p_y) * v_x)) + (2.0 * ((b_x * p_x) * u))) + (2.0 * ((b_y * p_x) * v))) + (2.0 * ((u * u_x) * u_x))) + (2.0 * ((u * u_xy) * v))) + (2.0 * ((u * u_y) * v_x))) + ((u * u) * u_xx)) + (2.0 * ((u_x * u_y) * v))) + (2.0 * ((u_y * v) * v_y))) + ((u_yy * v) * v))
+v_tt = (((((((((((((((((((((b * gm) * p) * u_xy) + (((b * gm) * p) * v_yy)) + (((b * gm) * p_y) * u_x)) + (((b * gm) * p_y) * v_y)) + ((b * p_x) * u_y)) + ((b * p_x) * v_x)) + (2.0 * ((b * p_xy) * u))) - ((b * p_y) * u_x)) + ((b * p_y) * v_y)) + (2.0 * ((b * p_yy) * v))) + (2.0 * ((b_x * p_y) * u))) + (2.0 * ((b_y * p_y) * v))) + (2.0 * ((u * u_x) * v_x))) + (2.0 * ((u * v) * v_xy))) + (2.0 * ((u * v_x) * v_y))) + ((u * u) * v_xx)) + (2.0 * ((u_y * v) * v_x))) + (2.0 * ((v * v_y) * v_y))) + ((v * v) * v_yy))
+p_tt = (((((((((((((((((((((((((((((b * gm) * p) * p_xx) + (((b * gm) * p) * p_yy)) + ((b * p_x) * p_x)) + ((b * p_y) * p_y)) + (((b_x * gm) * p) * p_x)) + (((b_y * gm) * p) * p_y)) + (2.0 * (((gm * p) * u) * u_xx))) + (2.0 * (((gm * p) * u) * v_xy))) + (((gm * p) * u_x) * u_x)) + (2.0 * (((gm * p) * u_xy) * v))) + (2.0 * (((gm * p) * u_y) * v_x))) + (2.0 * (((gm * p) * v) * v_yy))) + (((gm * p) * v_y) * v_y)) + (2.0 * (((gm * p_x) * u) * u_x))) + (2.0 * (((gm * p_x) * u) * v_y))) + (2.0 * (((gm * p_y) * u_x) * v))) + (2.0 * (((gm * p_y) * v) * v_y))) + (2.0 * ((((gm * gm) * p) * u_x) * v_y))) + ((((gm * gm) * p) * u_x) * u_x)) + ((((gm * gm) * p) * v_y) * v_y)) + (2.0 * ((p_x * u) * u_x))) + (2.0 * ((p_x * u_y) * v))) + (2.0 * ((p_xy * u) * v))) + ((p_xx * u) * u)) + (2.0 * ((p_y * u) * v_x))) + (2.0 * ((p_y * v) * v_y))) + ((p_yy * v) * v))
+end function
+
+begin function (b_tx,u_tx,v_tx,p_tx) = d_tx((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_xx = d_xx(b,b_x,b_y)
+b_xy = d_xy(b,b_x,b_y)
+b_yy = d_yy(b,b_x,b_y)
+u_xx = d_xx(u,u_x,u_y)
+u_xy = d_xy(u,u_x,u_y)
+u_yy = d_yy(u,u_x,u_y)
+v_xx = d_xx(v,v_x,v_y)
+v_xy = d_xy(v,v_x,v_y)
+v_yy = d_yy(v,v_x,v_y)
+p_xx = d_xx(p,p_x,p_y)
+p_xy = d_xy(p,p_x,p_y)
+p_yy = d_yy(p,p_x,p_y)
+b_tx = ((((((b * u_xx) + (b * v_xy)) + (b_x * v_y)) - (b_xy * v)) - (b_xx * u)) - (b_y * v_x))
+u_tx = ((((((-(b * p_xx)) - (b_x * p_x)) - (u * u_xx)) - (u_x * u_x)) - (u_xy * v)) - (u_y * v_x))
+v_tx = ((((((-(b * p_xy)) - (b_x * p_y)) - (u * v_xx)) - (u_x * v_x)) - (v * v_xy)) - (v_x * v_y))
+p_tx = ((((((((-((gm * p) * u_xx)) - ((gm * p) * v_xy)) - ((gm * p_x) * u_x)) - ((gm * p_x) * v_y)) - (p_x * u_x)) - (p_xy * v)) - (p_xx * u)) - (p_y * v_x))
+end function
+
+begin function (b_ttx,u_ttx,v_ttx,p_ttx) = d_ttx((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_xx = d_xx(b,b_x,b_y)
+b_xy = d_xy(b,b_x,b_y)
+b_yy = d_yy(b,b_x,b_y)
+b_xxx = d_xxx(b,b_x,b_y)
+b_xxy = d_xxy(b,b_x,b_y)
+b_xyy = d_xyy(b,b_x,b_y)
+b_yyy = d_yyy(b,b_x,b_y)
+u_xx = d_xx(u,u_x,u_y)
+u_xy = d_xy(u,u_x,u_y)
+u_yy = d_yy(u,u_x,u_y)
+u_xxx = d_xxx(u,u_x,u_y)
+u_xxy = d_xxy(u,u_x,u_y)
+u_xyy = d_xyy(u,u_x,u_y)
+u_yyy = d_yyy(u,u_x,u_y)
+v_xx = d_xx(v,v_x,v_y)
+v_xy = d_xy(v,v_x,v_y)
+v_yy = d_yy(v,v_x,v_y)
+v_xxx = d_xxx(v,v_x,v_y)
+v_xxy = d_xxy(v,v_x,v_y)
+v_xyy = d_xyy(v,v_x,v_y)
+v_yyy = d_yyy(v,v_x,v_y)
+p_xx = d_xx(p,p_x,p_y)
+p_xy = d_xy(p,p_x,p_y)
+p_yy = d_yy(p,p_x,p_y)
+p_xxx = d_xxx(p,p_x,p_y)
+p_xxy = d_xxy(p,p_x,p_y)
+p_xyy = d_xyy(p,p_x,p_y)
+p_yyy = d_yyy(p,p_x,p_y)
+b_ttx = ((((((((((((((((((((((((((-(2.0 * ((b * b_x) * p_xx))) - (2.0 * ((b * b_x) * p_yy))) - (2.0 * ((b * u) * u_xxx))) - (2.0 * ((b * u) * v_xxy))) - (2.0 * ((b * u_x) * u_xx))) - (4.0 * ((b * u_xy) * v_x))) + (2.0 * ((b * u_xx) * v_y))) - (2.0 * ((b * u_xxy) * v))) - (2.0 * ((b * u_y) * v_xx))) - (2.0 * ((b * v) * v_xyy))) - (2.0 * ((b * v_x) * v_yy))) - ((b * b) * p_xyy)) - ((b * b) * p_xxx)) - (2.0 * ((b_x * u) * u_xx))) - (4.0 * ((b_x * u) * v_xy))) - (2.0 * ((b_x * v) * v_yy))) + (4.0 * ((b_xy * u) * v_x))) + ((b_xyy * v) * v)) + (2.0 * ((b_xx * u) * u_x))) - (2.0 * ((b_xx * u) * v_y))) + (2.0 * ((b_xx * u_y) * v))) + (2.0 * ((b_xxy * u) * v))) + ((b_xxx * u) * u)) + (2.0 * ((b_y * u) * v_xx))) - (2.0 * ((b_y * u_xx) * v))) + (2.0 * ((b_yy * v) * v_x)))
+u_ttx = ((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * u_xxx) + (((b * gm) * p) * v_xxy)) + (2.0 * (((b * gm) * p_x) * u_xx))) + (2.0 * (((b * gm) * p_x) * v_xy))) + (((b * gm) * p_xx) * u_x)) + (((b * gm) * p_xx) * v_y)) + ((b * p_x) * u_xx)) - ((b * p_x) * v_xy)) + ((b * p_xy) * u_y)) + (3.0 * ((b * p_xy) * v_x))) + (3.0 * ((b * p_xx) * u_x))) - ((b * p_xx) * v_y)) + (2.0 * ((b * p_xxy) * v))) + (2.0 * ((b * p_xxx) * u))) + ((b * p_y) * u_xy)) + ((b * p_y) * v_xx)) + (((b_x * gm) * p) * u_xx)) + (((b_x * gm) * p) * v_xy)) + (((b_x * gm) * p_x) * u_x)) + (((b_x * gm) * p_x) * v_y)) + (3.0 * ((b_x * p_x) * u_x))) - ((b_x * p_x) * v_y)) + (2.0 * ((b_x * p_xy) * v))) + (4.0 * ((b_x * p_xx) * u))) + ((b_x * p_y) * u_y)) + ((b_x * p_y) * v_x)) + (2.0 * ((b_xy * p_x) * v))) + (2.0 * ((b_xx * p_x) * u))) + (2.0 * ((b_y * p_x) * v_x))) + (2.0 * ((b_y * p_xx) * v))) + (6.0 * ((u * u_x) * u_xx))) + (4.0 * ((u * u_xy) * v_x))) + (2.0 * ((u * u_xxy) * v))) + (2.0 * ((u * u_y) * v_xx))) + ((u * u) * u_xxx)) + (4.0 * ((u_x * u_xy) * v))) + (4.0 * ((u_x * u_y) * v_x))) + (2.0 * ((u_x * u_x) * u_x))) + (2.0 * ((u_xy * v) * v_y))) + ((u_xyy * v) * v)) + (2.0 * ((u_xx * u_y) * v))) + (2.0 * ((u_y * v) * v_xy))) + (2.0 * ((u_y * v_x) * v_y))) + (2.0 * ((u_yy * v) * v_x)))
+v_ttx = (((((((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * u_xxy) + (((b * gm) * p) * v_xyy)) + (((b * gm) * p_x) * u_xy)) + (((b * gm) * p_x) * v_yy)) + (((b * gm) * p_xy) * u_x)) + (((b * gm) * p_xy) * v_y)) + (((b * gm) * p_y) * u_xx)) + (((b * gm) * p_y) * v_xy)) + ((b * p_x) * u_xy)) + ((b * p_x) * v_xx)) + ((b * p_xy) * u_x)) + ((b * p_xy) * v_y)) + (2.0 * ((b * p_xyy) * v))) + ((b * p_xx) * u_y)) + ((b * p_xx) * v_x)) + (2.0 * ((b * p_xxy) * u))) - ((b * p_y) * u_xx)) + ((b * p_y) * v_xy)) + (2.0 * ((b * p_yy) * v_x))) + (((b_x * gm) * p) * u_xy)) + (((b_x * gm) * p) * v_yy)) + (((b_x * gm) * p_y) * u_x)) + (((b_x * gm) * p_y) * v_y)) + ((b_x * p_x) * u_y)) + ((b_x * p_x) * v_x)) + (4.0 * ((b_x * p_xy) * u))) + ((b_x * p_y) * u_x)) + ((b_x * p_y) * v_y)) + (2.0 * ((b_x * p_yy) * v))) + (2.0 * ((b_xy * p_y) * v))) + (2.0 * ((b_xx * p_y) * u))) + (2.0 * ((b_y * p_xy) * v))) + (2.0 * ((b_y * p_y) * v_x))) + (4.0 * ((u * u_x) * v_xx))) + (2.0 * ((u * u_xx) * v_x))) + (2.0 * ((u * v) * v_xxy))) + (4.0 * ((u * v_x) * v_xy))) + (2.0 * ((u * v_xx) * v_y))) + ((u * u) * v_xxx)) + (2.0 * ((u_x * v) * v_xy))) + (2.0 * ((u_x * v_x) * v_y))) + (2.0 * ((u_x * u_x) * v_x))) + (2.0 * ((u_xy * v) * v_x))) + (2.0 * ((u_y * v) * v_xx))) + (2.0 * ((u_y * v_x) * v_x))) + (2.0 * ((v * v_x) * v_yy))) + (4.0 * ((v * v_xy) * v_y))) + ((v * v) * v_xyy)) + (2.0 * ((v_x * v_y) * v_y)))
+p_ttx = (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * p_xyy) + (((b * gm) * p) * p_xxx)) + (((b * gm) * p_x) * p_xx)) + (((b * gm) * p_x) * p_yy)) + (2.0 * ((b * p_x) * p_xx))) + (2.0 * ((b * p_xy) * p_y))) + (2.0 * (((b_x * gm) * p) * p_xx))) + (((b_x * gm) * p) * p_yy)) + (((b_x * gm) * p_x) * p_x)) + ((b_x * p_x) * p_x)) + ((b_x * p_y) * p_y)) + (((b_xy * gm) * p) * p_y)) + (((b_xx * gm) * p) * p_x)) + (((b_y * gm) * p) * p_xy)) + (((b_y * gm) * p_x) * p_y)) + (2.0 * (((gm * p) * u) * u_xxx))) + (2.0 * (((gm * p) * u) * v_xxy))) + (4.0 * (((gm * p) * u_x) * u_xx))) + (2.0 * (((gm * p) * u_x) * v_xy))) + (4.0 * (((gm * p) * u_xy) * v_x))) + (2.0 * (((gm * p) * u_xxy) * v))) + (2.0 * (((gm * p) * u_y) * v_xx))) + (2.0 * (((gm * p) * v) * v_xyy))) + (2.0 * (((gm * p) * v_x) * v_yy))) + (2.0 * (((gm * p) * v_xy) * v_y))) + (4.0 * (((gm * p_x) * u) * u_xx))) + (4.0 * (((gm * p_x) * u) * v_xy))) + (2.0 * (((gm * p_x) * u_x) * v_y))) + (3.0 * (((gm * p_x) * u_x) * u_x))) + (2.0 * (((gm * p_x) * u_xy) * v))) + (2.0 * (((gm * p_x) * u_y) * v_x))) + (2.0 * (((gm * p_x) * v) * v_yy))) + (((gm * p_x) * v_y) * v_y)) + (2.0 * (((gm * p_xy) * u_x) * v))) + (2.0 * (((gm * p_xy) * v) * v_y))) + (2.0 * (((gm * p_xx) * u) * u_x))) + (2.0 * (((gm * p_xx) * u) * v_y))) + (2.0 * (((gm * p_y) * u_x) * v_x))) + (2.0 * (((gm * p_y) * u_xx) * v))) + (2.0 * (((gm * p_y) * v) * v_xy))) + (2.0 * (((gm * p_y) * v_x) * v_y))) + (2.0 * ((((gm * gm) * p) * u_x) * u_xx))) + (2.0 * ((((gm * gm) * p) * u_x) * v_xy))) + (2.0 * ((((gm * gm) * p) * u_xx) * v_y))) + (2.0 * ((((gm * gm) * p) * v_xy) * v_y))) + (2.0 * ((((gm * gm) * p_x) * u_x) * v_y))) + ((((gm * gm) * p_x) * u_x) * u_x)) + ((((gm * gm) * p_x) * v_y) * v_y)) + (2.0 * ((p_x * u) * u_xx))) + (2.0 * ((p_x * u_x) * u_x))) + (2.0 * ((p_x * u_xy) * v))) + (2.0 * ((p_x * u_y) * v_x))) + (4.0 * ((p_xy * u) * v_x))) + (2.0 * ((p_xy * u_x) * v))) + (2.0 * ((p_xy * v) * v_y))) + ((p_xyy * v) * v)) + (4.0 * ((p_xx * u) * u_x))) + (2.0 * ((p_xx * u_y) * v))) + (2.0 * ((p_xxy * u) * v))) + ((p_xxx * u) * u)) + (2.0 * ((p_y * u) * v_xx))) + (2.0 * ((p_y * u_x) * v_x))) + (2.0 * ((p_y * v) * v_xy))) + (2.0 * ((p_y * v_x) * v_y))) + (2.0 * ((p_yy * v) * v_x)))
+end function
+
+begin function (b_ty,u_ty,v_ty,p_ty) = d_ty((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_xx = d_xx(b,b_x,b_y)
+b_xy = d_xy(b,b_x,b_y)
+b_yy = d_yy(b,b_x,b_y)
+u_xx = d_xx(u,u_x,u_y)
+u_xy = d_xy(u,u_x,u_y)
+u_yy = d_yy(u,u_x,u_y)
+v_xx = d_xx(v,v_x,v_y)
+v_xy = d_xy(v,v_x,v_y)
+v_yy = d_yy(v,v_x,v_y)
+p_xx = d_xx(p,p_x,p_y)
+p_xy = d_xy(p,p_x,p_y)
+p_yy = d_yy(p,p_x,p_y)
+b_ty = ((((((b * u_xy) + (b * v_yy)) - (b_x * u_y)) - (b_xy * u)) + (b_y * u_x)) - (b_yy * v))
+u_ty = ((((((-(b * p_xy)) - (b_y * p_x)) - (u * u_xy)) - (u_x * u_y)) - (u_y * v_y)) - (u_yy * v))
+v_ty = ((((((-(b * p_yy)) - (b_y * p_y)) - (u * v_xy)) - (u_y * v_x)) - (v * v_yy)) - (v_y * v_y))
+p_ty = ((((((((-((gm * p) * u_xy)) - ((gm * p) * v_yy)) - ((gm * p_y) * u_x)) - ((gm * p_y) * v_y)) - (p_x * u_y)) - (p_xy * u)) - (p_y * v_y)) - (p_yy * v))
+end function
+
+begin function (b_tty,u_tty,v_tty,p_tty) = d_tty((b,u,v,p),(b_x,u_x,v_x,p_x),(b_y,u_y,v_y,p_y))
+b_xx = d_xx(b,b_x,b_y)
+b_xy = d_xy(b,b_x,b_y)
+b_yy = d_yy(b,b_x,b_y)
+b_xxx = d_xxx(b,b_x,b_y)
+b_xxy = d_xxy(b,b_x,b_y)
+b_xyy = d_xyy(b,b_x,b_y)
+b_yyy = d_yyy(b,b_x,b_y)
+u_xx = d_xx(u,u_x,u_y)
+u_xy = d_xy(u,u_x,u_y)
+u_yy = d_yy(u,u_x,u_y)
+u_xxx = d_xxx(u,u_x,u_y)
+u_xxy = d_xxy(u,u_x,u_y)
+u_xyy = d_xyy(u,u_x,u_y)
+u_yyy = d_yyy(u,u_x,u_y)
+v_xx = d_xx(v,v_x,v_y)
+v_xy = d_xy(v,v_x,v_y)
+v_yy = d_yy(v,v_x,v_y)
+v_xxx = d_xxx(v,v_x,v_y)
+v_xxy = d_xxy(v,v_x,v_y)
+v_xyy = d_xyy(v,v_x,v_y)
+v_yyy = d_yyy(v,v_x,v_y)
+p_xx = d_xx(p,p_x,p_y)
+p_xy = d_xy(p,p_x,p_y)
+p_yy = d_yy(p,p_x,p_y)
+p_xxx = d_xxx(p,p_x,p_y)
+p_xxy = d_xxy(p,p_x,p_y)
+p_xyy = d_xyy(p,p_x,p_y)
+p_yyy = d_yyy(p,p_x,p_y)
+b_tty = ((((((((((((((((((((((((((-(2.0 * ((b * b_y) * p_xx))) - (2.0 * ((b * b_y) * p_yy))) - (2.0 * ((b * u) * u_xxy))) - (2.0 * ((b * u) * v_xyy))) + (2.0 * ((b * u_x) * v_yy))) - (2.0 * ((b * u_xyy) * v))) - (2.0 * ((b * u_xx) * u_y))) - (4.0 * ((b * u_y) * v_xy))) - (2.0 * ((b * u_yy) * v_x))) - (2.0 * ((b * v) * v_yyy))) - (2.0 * ((b * v_y) * v_yy))) - ((b * b) * p_xxy)) - ((b * b) * p_yyy)) - (2.0 * ((b_x * u) * v_yy))) + (2.0 * ((b_x * u_yy) * v))) + (4.0 * ((b_xy * u_y) * v))) + (2.0 * ((b_xyy * u) * v))) + (2.0 * ((b_xx * u) * u_y))) + ((b_xxy * u) * u)) - (2.0 * ((b_y * u) * u_xx))) - (4.0 * ((b_y * u_xy) * v))) - (2.0 * ((b_y * v) * v_yy))) + (2.0 * ((b_yy * u) * v_x))) - (2.0 * ((b_yy * u_x) * v))) + (2.0 * ((b_yy * v) * v_y))) + ((b_yyy * v) * v))
+u_tty = (((((((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * u_xxy) + (((b * gm) * p) * v_xyy)) + (((b * gm) * p_x) * u_xy)) + (((b * gm) * p_x) * v_yy)) + (((b * gm) * p_xy) * u_x)) + (((b * gm) * p_xy) * v_y)) + (((b * gm) * p_y) * u_xx)) + (((b * gm) * p_y) * v_xy)) + ((b * p_x) * u_xy)) - ((b * p_x) * v_yy)) + ((b * p_xy) * u_x)) + ((b * p_xy) * v_y)) + (2.0 * ((b * p_xyy) * v))) + (2.0 * ((b * p_xx) * u_y))) + (2.0 * ((b * p_xxy) * u))) + ((b * p_y) * u_yy)) + ((b * p_y) * v_xy)) + ((b * p_yy) * u_y)) + ((b * p_yy) * v_x)) + (2.0 * ((b_x * p_x) * u_y))) + (2.0 * ((b_x * p_xy) * u))) + (2.0 * ((b_xy * p_x) * u))) + (((b_y * gm) * p) * u_xx)) + (((b_y * gm) * p) * v_xy)) + (((b_y * gm) * p_x) * u_x)) + (((b_y * gm) * p_x) * v_y)) + ((b_y * p_x) * u_x)) + ((b_y * p_x) * v_y)) + (4.0 * ((b_y * p_xy) * v))) + (2.0 * ((b_y * p_xx) * u))) + ((b_y * p_y) * u_y)) + ((b_y * p_y) * v_x)) + (2.0 * ((b_yy * p_x) * v))) + (4.0 * ((u * u_x) * u_xy))) + (2.0 * ((u * u_xy) * v_y))) + (2.0 * ((u * u_xyy) * v))) + (2.0 * ((u * u_xx) * u_y))) + (2.0 * ((u * u_y) * v_xy))) + (2.0 * ((u * u_yy) * v_x))) + ((u * u) * u_xxy)) + (2.0 * ((u_x * u_y) * v_y))) + (2.0 * ((u_x * u_yy) * v))) + (2.0 * ((u_x * u_x) * u_y))) + (4.0 * ((u_xy * u_y) * v))) + (2.0 * ((u_y * v) * v_yy))) + (2.0 * ((u_y * v_y) * v_y))) + (2.0 * ((u_y * u_y) * v_x))) + (4.0 * ((u_yy * v) * v_y))) + ((u_yyy * v) * v))
+v_tty = ((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * u_xyy) + (((b * gm) * p) * v_yyy)) + (2.0 * (((b * gm) * p_y) * u_xy))) + (2.0 * (((b * gm) * p_y) * v_yy))) + (((b * gm) * p_yy) * u_x)) + (((b * gm) * p_yy) * v_y)) + ((b * p_x) * u_yy)) + ((b * p_x) * v_xy)) + (3.0 * ((b * p_xy) * u_y))) + ((b * p_xy) * v_x)) + (2.0 * ((b * p_xyy) * u))) - ((b * p_y) * u_xy)) + ((b * p_y) * v_yy)) - ((b * p_yy) * u_x)) + (3.0 * ((b * p_yy) * v_y))) + (2.0 * ((b * p_yyy) * v))) + (2.0 * ((b_x * p_y) * u_y))) + (2.0 * ((b_x * p_yy) * u))) + (2.0 * ((b_xy * p_y) * u))) + (((b_y * gm) * p) * u_xy)) + (((b_y * gm) * p) * v_yy)) + (((b_y * gm) * p_y) * u_x)) + (((b_y * gm) * p_y) * v_y)) + ((b_y * p_x) * u_y)) + ((b_y * p_x) * v_x)) + (2.0 * ((b_y * p_xy) * u))) - ((b_y * p_y) * u_x)) + (3.0 * ((b_y * p_y) * v_y))) + (4.0 * ((b_y * p_yy) * v))) + (2.0 * ((b_yy * p_y) * v))) + (2.0 * ((u * u_x) * v_xy))) + (2.0 * ((u * u_xy) * v_x))) + (2.0 * ((u * u_y) * v_xx))) + (2.0 * ((u * v) * v_xyy))) + (2.0 * ((u * v_x) * v_yy))) + (4.0 * ((u * v_xy) * v_y))) + ((u * u) * v_xxy)) + (2.0 * ((u_x * u_y) * v_x))) + (4.0 * ((u_y * v) * v_xy))) + (4.0 * ((u_y * v_x) * v_y))) + (2.0 * ((u_yy * v) * v_x))) + (6.0 * ((v * v_y) * v_yy))) + ((v * v) * v_yyy)) + (2.0 * ((v_y * v_y) * v_y)))
+p_tty = (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * p_xxy) + (((b * gm) * p) * p_yyy)) + (((b * gm) * p_xx) * p_y)) + (((b * gm) * p_y) * p_yy)) + (2.0 * ((b * p_x) * p_xy))) + (2.0 * ((b * p_y) * p_yy))) + (((b_x * gm) * p) * p_xy)) + (((b_x * gm) * p_x) * p_y)) + (((b_xy * gm) * p) * p_x)) + (((b_y * gm) * p) * p_xx)) + (2.0 * (((b_y * gm) * p) * p_yy))) + (((b_y * gm) * p_y) * p_y)) + ((b_y * p_x) * p_x)) + ((b_y * p_y) * p_y)) + (((b_yy * gm) * p) * p_y)) + (2.0 * (((gm * p) * u) * u_xxy))) + (2.0 * (((gm * p) * u) * v_xyy))) + (2.0 * (((gm * p) * u_x) * u_xy))) + (2.0 * (((gm * p) * u_xy) * v_y))) + (2.0 * (((gm * p) * u_xyy) * v))) + (2.0 * (((gm * p) * u_xx) * u_y))) + (4.0 * (((gm * p) * u_y) * v_xy))) + (2.0 * (((gm * p) * u_yy) * v_x))) + (2.0 * (((gm * p) * v) * v_yyy))) + (4.0 * (((gm * p) * v_y) * v_yy))) + (2.0 * (((gm * p_x) * u) * u_xy))) + (2.0 * (((gm * p_x) * u) * v_yy))) + (2.0 * (((gm * p_x) * u_x) * u_y))) + (2.0 * (((gm * p_x) * u_y) * v_y))) + (2.0 * (((gm * p_xy) * u) * u_x))) + (2.0 * (((gm * p_xy) * u) * v_y))) + (2.0 * (((gm * p_y) * u) * u_xx))) + (2.0 * (((gm * p_y) * u) * v_xy))) + (2.0 * (((gm * p_y) * u_x) * v_y))) + (((gm * p_y) * u_x) * u_x)) + (4.0 * (((gm * p_y) * u_xy) * v))) + (2.0 * (((gm * p_y) * u_y) * v_x))) + (4.0 * (((gm * p_y) * v) * v_yy))) + (3.0 * (((gm * p_y) * v_y) * v_y))) + (2.0 * (((gm * p_yy) * u_x) * v))) + (2.0 * (((gm * p_yy) * v) * v_y))) + (2.0 * ((((gm * gm) * p) * u_x) * u_xy))) + (2.0 * ((((gm * gm) * p) * u_x) * v_yy))) + (2.0 * ((((gm * gm) * p) * u_xy) * v_y))) + (2.0 * ((((gm * gm) * p) * v_y) * v_yy))) + (2.0 * ((((gm * gm) * p_y) * u_x) * v_y))) + ((((gm * gm) * p_y) * u_x) * u_x)) + ((((gm * gm) * p_y) * v_y) * v_y)) + (2.0 * ((p_x * u) * u_xy))) + (2.0 * ((p_x * u_x) * u_y))) + (2.0 * ((p_x * u_y) * v_y))) + (2.0 * ((p_x * u_yy) * v))) + (2.0 * ((p_xy * u) * u_x))) + (2.0 * ((p_xy * u) * v_y))) + (4.0 * ((p_xy * u_y) * v))) + (2.0 * ((p_xyy * u) * v))) + (2.0 * ((p_xx * u) * u_y))) + ((p_xxy * u) * u)) + (2.0 * ((p_y * u) * v_xy))) + (2.0 * ((p_y * u_y) * v_x))) + (2.0 * ((p_y * v) * v_yy))) + (2.0 * ((p_y * v_y) * v_y))) + (2.0 * ((p_yy * u) * v_x))) + (4.0 * ((p_yy * v) * v_y))) + ((p_yyy * v) * v))
+end function
+
+begin function init() \
+  returns (b, u, v, p, \
+           b_x, u_x, v_x, p_x, \
+           b_y, u_y, v_y, p_y, \
+           bp, up, vp, pp, \
+           bp_x, up_x, vp_x, pp_x, \
+           bp_y, up_y, vp_y, pp_y, \
+           bh, uh, vh, ph, \
+           bh_x, uh_x, vh_x, ph_x, \
+           bh_y, uh_y, vh_y, ph_y)
+
+    double [] :: b = 0, u = 0, v = 0, p = 0, \
+                 b_x = 0, u_x = 0, v_x = 0, p_x = 0, \
+                 b_y = 0, u_y = 0, v_y = 0, p_y = 0, \
+                 bp = 0, up = 0, vp = 0, pp = 0, \
+                 bp_x = 0, up_x = 0, vp_x = 0, pp_x = 0, \
+                 bp_y = 0, up_y = 0, vp_y = 0, pp_y = 0, \
+                 bh = 0, uh = 0, vh = 0, ph = 0, \
+                 bh_x = 0, uh_x = 0, vh_x = 0, ph_x = 0, \
+                 bh_y = 0, uh_y = 0, vh_y = 0, ph_y = 0
+end function
+
+begin function step (b, u, v, p, \
+                     b_x, u_x, v_x, p_x, \
+                     b_y, u_y, v_y, p_y, \
+                     bp, up, vp, pp, \
+                     bp_x, up_x, vp_x, pp_x, \
+                     bp_y, up_y, vp_y, pp_y, \
+                     bh, uh, vh, ph, \
+                     bh_x, uh_x, vh_x, ph_x, \
+                     bh_y, uh_y, vh_y, ph_y) \
+  returns (b', u', v', p', \
+           b_x', u_x', v_x', p_x', \
+           b_y', u_y', v_y', p_y', \
+           bp', up', vp', pp', \
+           bp_x', up_x', vp_x', pp_x', \
+           bp_y', up_y', vp_y', pp_y', \
+           bh', uh', vh', ph', \
+           bh_x', uh_x', vh_x', ph_x', \
+           bh_y', uh_y', vh_y', ph_y')
+
+    q = (b,u,v,p)
+    q_x = (b_x,u_x,v_x,p_x)
+    q_y = (b_y,u_y,v_y,p_y)
+    qp = (bp,up,vp,pp)
+    qp_x = (bp_x,up_x,vp_x,pp_x)
+    qp_y = (bp_y,up_y,vp_y,pp_y)
+    qh = (bh,uh,vh,ph)
+    qh_x = (bh_x,uh_x,vh_x,ph_x)
+    qh_y = (bh_y,uh_y,vh_y,ph_y)
+
+    q_t = d_t(qp,qp_x,qp_y)
+    q_tt = d_tt(qp,qp_x,qp_y)
+    q_tx = d_tx(qp,qp_x,qp_y)
+    q_ttx = d_ttx(qp,qp_x,qp_y)
+    q_ty = d_ty(qp,qp_x,qp_y)
+    q_tty = d_tty(qp,qp_x,qp_y)
+
+    q' = qh + dt*q_t/2 - dt*dt*q_tt/12
+    (b',u',v',p') = q'
+    q_x' = qh_x + dt*q_tx/2 - dt*dt*q_ttx/12
+    (b_x',u_x',v_x',p_x') = q_x'
+    q_y' = qh_y + dt*q_ty/2 - dt*dt*q_tty/12
+    (b_y',u_y',v_y',p_y') = q_y'
+
+    qp' = q' + dt*q_t + dt*dt*q_tt/2
+    (bp',up',vp',pp') = qp'
+    qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2
+    (bp_x',up_x',vp_x',pp_x') = qp_x'
+    qp_y' = q_y' + dt*q_ty + dt*dt*q_tty/2
+    (bp_y',up_y',vp_y',pp_y') = qp_y'
+
+    qh' = q' + dt*q_t/2 + dt*dt*q_tt/12
+    (bh',uh',vh',ph') = qh'
+    qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12
+    (bh_x',uh_x',vh_x',ph_x') = qh_x'
+    qh_y' = q_y' + dt*q_ty/2 + dt*dt*q_tty/12
+    (bh_y',uh_y',vh_y',ph_y') = qh_y'
+end function
