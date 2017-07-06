@@ -88,7 +88,7 @@ double velcY_ytt(double x, double y) {
 void init(double h, double dt, Formura_Navigator &navi) {
     for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
         double x = (ix+navi.offset_x)*h;
-        for(int iy = navi.lower_y; ix < navi.upper_y; ++iy) {
+        for(int iy = navi.lower_y; iy < navi.upper_y; ++iy) {
             double y = (iy+navi.offset_y)*h;
             b[ix][iy] = dens(x,y);
             u[ix][iy] = velcX(x,y);
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
             double t = navi.time_step * dt;
             for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
                 double x = (ix + navi.offset_x)*h;
-                for(int iy = navi.lower_y; ix < navi.upper_y; ++iy) {
+                for(int iy = navi.lower_y; iy < navi.upper_y; ++iy) {
                     double y = (iy+navi.offset_y)*h;
 
                     fprintf(fp, "%f %f %f %f %f %f\n", x, y, b[ix][iy], u[ix][iy], v[ix][iy],p[ix][iy]);
