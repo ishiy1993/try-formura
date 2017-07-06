@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
 
                     fprintf(fp, "%f %f %f %f %f %f\n", x, y, b[ix][iy], u[ix][iy], v[ix][iy],p[ix][iy]);
                 }
+                fprintf(fp,"\n");
             }
             fclose(fp);
         }
