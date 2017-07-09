@@ -1,12 +1,9 @@
 #!/bin/zsh
 
 problem=gauss
-CFL=${1:-0.1}
-step=${2:-100}
-id=${problem}-$(echo ${CFL} | awk '{printf("%f",$1)}')
-errorfile=data/${id}-${step}.err
-tmerrorimg=img/tm-error-${id}.pdf
-reerrorimg=img/re-error-${id}.pdf
+CFL=${1:-0.05}
+id=${problem}-${CFL}
+errorfile=data/${problem}.err
 l1errorimg=img/l1-error-${id}.pdf
 l1_xerrorimg=img/l1_x-error-${id}.pdf
 logfile=log
@@ -23,29 +20,14 @@ grep "cfl =" sode1.fmr sode1-main.cpp
 
 docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run-100-1000 ${logfile}
 
-tmfactor=$(awk '/^1.0/{print $2}' ${errorfile})
-ploton --xl dx --yl "total mass error" --yf "%.1E" --logx --logy \
-       --output "${tmerrorimg}" \
-       "#1 u 1:2 with linespoints, ${tmfactor}*x**4, ${tmfactor}*x**10" ${errorfile} |
-xargs cp2server
-
-refactor0=$(awk '/^0.10/{print $3}' ${errorfile})
-refactor1=$(awk '/^1.0/{print $3}' ${errorfile})
-ploton --xl dx --yl "maximum relative error" --yf "%.1E" --logx --logy \
-       --output "${reerrorimg}" \
-       "#1 u 1:3 with linespoints, ${refactor1}*x**4, ${refactor0}*(x/0.1)**4" ${errorfile} |
-xargs cp2server
-
-l1factor0=$(awk '/^0.10/{print $4}' ${errorfile})
-l1factor1=$(awk '/^1.0/{print $4}' ${errorfile})
-ploton --xl dx --yl "l1 norm of error" --yf "%.1E" --logx --logy \
+l1factor0=$(awk '/^0.10/{print $2}' ${errorfile})
+ploton --xl dx --yl "l1 norm of error" --yf "10^{%L}" --logx --logy \
        --output "${l1errorimg}" \
-       "#1 u 1:4 with linespoints, ${l1factor1}*x**4, ${l1factor0}*(x/0.1)**4" ${errorfile} |
+       "#1 u 1:2 with points, ${l1factor0}*(x/0.1)**3" ${errorfile} |
 xargs cp2server
 
-l1_xfactor0=$(awk '/^0.10/{print $5}' ${errorfile})
-l1_xfactor1=$(awk '/^1.0/{print $5}' ${errorfile})
-ploton --xl dx --yl "l1_x norm of error" --yf "%.1E" --logx --logy \
+l1_xfactor0=$(awk '/^0.10/{print $3}' ${errorfile})
+ploton --xl dx --yl "l1_x norm of error" --yf "10^{%L}" --logx --logy \
        --output "${l1_xerrorimg}" \
-       "#1 u 1:5 with linespoints, ${l1_xfactor1}*x**4, ${l1_xfactor0}*(x/0.1)**4" ${errorfile} |
+       "#1 u 1:3 with points, ${l1_xfactor0}*(x/0.1)**3" ${errorfile} |
 xargs cp2server
