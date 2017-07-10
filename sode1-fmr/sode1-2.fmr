@@ -2,6 +2,7 @@ dimension :: 2
 axes :: x,y
 
 double :: cfl = 0.05
+double :: s = 0.5
 double :: h = 100/NX
 double :: dt = cfl*h
 double :: gm = 1.4
@@ -148,6 +149,10 @@ v_tty = ((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * u_xyy) + ((
 p_tty = (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((b * gm) * p) * p_xxy) + (((b * gm) * p) * p_yyy)) + (((b * gm) * p_xx) * p_y)) + (((b * gm) * p_y) * p_yy)) + (2.0 * ((b * p_x) * p_xy))) + (2.0 * ((b * p_y) * p_yy))) + (((b_x * gm) * p) * p_xy)) + (((b_x * gm) * p_x) * p_y)) + (((b_xy * gm) * p) * p_x)) + (((b_y * gm) * p) * p_xx)) + (2.0 * (((b_y * gm) * p) * p_yy))) + (((b_y * gm) * p_y) * p_y)) + ((b_y * p_x) * p_x)) + ((b_y * p_y) * p_y)) + (((b_yy * gm) * p) * p_y)) + (2.0 * (((gm * p) * u) * u_xxy))) + (2.0 * (((gm * p) * u) * v_xyy))) + (2.0 * (((gm * p) * u_x) * u_xy))) + (2.0 * (((gm * p) * u_xy) * v_y))) + (2.0 * (((gm * p) * u_xyy) * v))) + (2.0 * (((gm * p) * u_xx) * u_y))) + (4.0 * (((gm * p) * u_y) * v_xy))) + (2.0 * (((gm * p) * u_yy) * v_x))) + (2.0 * (((gm * p) * v) * v_yyy))) + (4.0 * (((gm * p) * v_y) * v_yy))) + (2.0 * (((gm * p_x) * u) * u_xy))) + (2.0 * (((gm * p_x) * u) * v_yy))) + (2.0 * (((gm * p_x) * u_x) * u_y))) + (2.0 * (((gm * p_x) * u_y) * v_y))) + (2.0 * (((gm * p_xy) * u) * u_x))) + (2.0 * (((gm * p_xy) * u) * v_y))) + (2.0 * (((gm * p_y) * u) * u_xx))) + (2.0 * (((gm * p_y) * u) * v_xy))) + (2.0 * (((gm * p_y) * u_x) * v_y))) + (((gm * p_y) * u_x) * u_x)) + (4.0 * (((gm * p_y) * u_xy) * v))) + (2.0 * (((gm * p_y) * u_y) * v_x))) + (4.0 * (((gm * p_y) * v) * v_yy))) + (3.0 * (((gm * p_y) * v_y) * v_y))) + (2.0 * (((gm * p_yy) * u_x) * v))) + (2.0 * (((gm * p_yy) * v) * v_y))) + (2.0 * ((((gm * gm) * p) * u_x) * u_xy))) + (2.0 * ((((gm * gm) * p) * u_x) * v_yy))) + (2.0 * ((((gm * gm) * p) * u_xy) * v_y))) + (2.0 * ((((gm * gm) * p) * v_y) * v_yy))) + (2.0 * ((((gm * gm) * p_y) * u_x) * v_y))) + ((((gm * gm) * p_y) * u_x) * u_x)) + ((((gm * gm) * p_y) * v_y) * v_y)) + (2.0 * ((p_x * u) * u_xy))) + (2.0 * ((p_x * u_x) * u_y))) + (2.0 * ((p_x * u_y) * v_y))) + (2.0 * ((p_x * u_yy) * v))) + (2.0 * ((p_xy * u) * u_x))) + (2.0 * ((p_xy * u) * v_y))) + (4.0 * ((p_xy * u_y) * v))) + (2.0 * ((p_xyy * u) * v))) + (2.0 * ((p_xx * u) * u_y))) + ((p_xxy * u) * u)) + (2.0 * ((p_y * u) * v_xy))) + (2.0 * ((p_y * u_y) * v_x))) + (2.0 * ((p_y * v) * v_yy))) + (2.0 * ((p_y * v_y) * v_y))) + (2.0 * ((p_yy * u) * v_x))) + (4.0 * ((p_yy * v) * v_y))) + ((p_yyy * v) * v))
 end function
 
+begin function sm = smoo(a)
+    sm[i,j] = -s*a[i,j] + s*(a[i+1,j] + a[i-1,j] + a[i,j+1] + a[i,j-1])/4
+end function
+
 begin function init() \
   returns (b, u, v, p, \
            b_x, u_x, v_x, p_x, \
@@ -213,17 +218,17 @@ begin function step (b, u, v, p, \
     q_y' = qh_y + dt*q_ty/2 - dt*dt*q_tty/12
     (b_y',u_y',v_y',p_y') = q_y'
 
-    qp' = q' + dt*q_t + dt*dt*q_tt/2
+    qp' = q' + dt*q_t + dt*dt*q_tt/2 + smoo(qp)
     (bp',up',vp',pp') = qp'
-    qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2
+    qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2 + smoo(qp_x)
     (bp_x',up_x',vp_x',pp_x') = qp_x'
-    qp_y' = q_y' + dt*q_ty + dt*dt*q_tty/2
+    qp_y' = q_y' + dt*q_ty + dt*dt*q_tty/2 + smoo(qp_y)
     (bp_y',up_y',vp_y',pp_y') = qp_y'
 
-    qh' = q' + dt*q_t/2 + dt*dt*q_tt/12
+    qh' = q' + dt*q_t/2 + dt*dt*q_tt/12 + smoo(qh)
     (bh',uh',vh',ph') = qh'
-    qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12
+    qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12 + smoo(qh_x)
     (bh_x',uh_x',vh_x',ph_x') = qh_x'
-    qh_y' = q_y' + dt*q_ty/2 + dt*dt*q_tty/12
+    qh_y' = q_y' + dt*q_ty/2 + dt*dt*q_tty/12 + smoo(qh_y)
     (bh_y',uh_y',vh_y',ph_y') = qh_y'
 end function

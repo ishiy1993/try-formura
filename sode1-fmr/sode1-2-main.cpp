@@ -8,9 +8,9 @@
 int mpi_my_rank;
 
 int T_MAX = 1001;
-int T_MONITOR = 100;
+int T_MONITOR = 40;
 
-double k = 2*M_PI/50.0;
+double k = M_PI/50.0;
 
 double dens(double x, double y) {
     return 1.0;
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
     Formura_Init(&navi, MPI_COMM_WORLD);
 
     double cfl = 0.05;
+    double s = 0.5;
     double h = 100.0/NX;
     double dt = cfl*h;
     init(h, dt, navi);
@@ -148,11 +149,8 @@ int main(int argc, char **argv) {
         if(navi.time_step % T_MONITOR == 0) {
             printf("it = %d\n", navi.time_step);
 
-            double l1 = 0;
-            double l1_x = 0;
-
             char fn[256];
-            sprintf(fn, "data/%s-%f-%d-%d.dat", problem, cfl, NX, navi.time_step);
+            sprintf(fn, "data/%s-%f-%f-%d-%d.dat", problem, cfl, s, NX, navi.time_step);
             FILE *fp = fopen(fn, "w");
 
             double t = navi.time_step * dt;
