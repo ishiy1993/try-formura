@@ -80,12 +80,13 @@ main = do
             es3 = zipWith (-) d3s d3s'
             d2L1 = foldl' (\acc e -> acc + abs e) 0 es2
             d3L1 = foldl' (\acc e -> acc + abs e) 0 es3
-        return (dx,d2L1,d3L1)
+            nx' = fromIntegral nx
+        return (dx,d2L1/nx',d3L1/nx')
     writeData scheme es
 
 writeData :: (Show a, Floating a) => String -> [(a,a,a)] -> IO ()
 writeData scheme es = do 
-    let file = "data/" ++ scheme ++ "-0.1-derivative.err"
+    let file = "data/" ++ scheme ++ "-derivative.err"
         st = unlines $ map (\(dx,d2,d3) -> show dx ++ " " ++ show d2 ++ " " ++ show d3) es
     writeFile file st
 

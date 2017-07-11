@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     char efn[256];
     sprintf(efn, "data/%s.err", problem);
     FILE *efp = fopen(efn, "a");
-    fprintf(efp, "%f %e %e\n", dx, l1, l1_x);
+    fprintf(efp, "%f %e %e %e %e\n", dx, l1, l1_x, l1/NX, l1_x/NX);
     fclose(efp);
 
     MPI_Finalize();
