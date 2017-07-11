@@ -21,15 +21,15 @@ main = do
             dds' = differences scheme dx xs
             error = dds |-| dds'
             l1 = foldl' (\acc (_,e) -> acc + abs e) 0 error
-            mre = foldl' (\acc (_,e) -> if acc < e then e else acc) 0 error
-        return (dx,l1,mre)
+            nx' = fromIntegral nx
+        return (dx,l1,l1/nx')
     writeData scheme es
 
 type State = [(Double, Double)]
 
 writeData :: String -> [(Double,Double,Double)] -> IO ()
 writeData scheme es = do 
-    let file = "data/" ++ scheme ++ "-0.1-derivative.err"
+    let file = "data/" ++ scheme ++ "-derivative.err"
         st = unlines $ map (\(dx,l1,mre) -> show dx ++ " " ++ show l1 ++ " " ++ show mre) es
     writeFile file st
 

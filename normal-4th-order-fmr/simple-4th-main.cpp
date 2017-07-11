@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     char efn[256];
     sprintf(efn, "data/simple-%s.err", problem);
     FILE *efp = fopen(efn, "a");
-    fprintf(efp, "%f %e\n", dx, l1);
+    fprintf(efp, "%f %e %f %e\n", dx, l1, dt, l1/NX);
     fclose(efp);
 
     MPI_Finalize();
