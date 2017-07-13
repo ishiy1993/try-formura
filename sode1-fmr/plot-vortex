@@ -1,0 +1,69 @@
+#!/bin/gnuplot
+
+set term eps color enhanced
+set output "img/vortex-0.25.eps"
+
+set pm3d map
+set style data pm3d
+
+#set xlabel "x"
+#set ylabel "y"
+#set cblabel "b(x,y)"
+unset xtics
+unset ytics
+unset ztics
+#unset cbtics
+
+set xrange [0:100]
+set yrange [0:100]
+set cbrange [0.4:2.5]
+set palette rgb 33,13,10
+set size square
+
+set tmargin 0
+set bmargin 0
+set lmargin 0
+set rmargin 0
+
+set multiplot layout 3,3
+
+set size 0.4,0.4
+set origin 0.025,0.65
+set title "0"
+splot "data/vortex-0.050000-0.250000-200-0.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.35,0.65
+set title "200"
+splot "data/vortex-0.050000-0.250000-200-200.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.65,0.65
+set title "400"
+splot "data/vortex-0.050000-0.250000-200-400.dat" u 1:2:3 notitle
+
+set size 0.4,0.4
+set origin 0.025,0.325
+set title "600"
+splot "data/vortex-0.050000-0.250000-200-600.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.35,0.325
+set title "800"
+splot "data/vortex-0.050000-0.250000-200-800.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.65,0.325
+set title "880"
+splot "data/vortex-0.050000-0.250000-200-880.dat" u 1:2:3 notitle
+
+set size 0.4,0.4
+set origin 0.025,0.0
+set title "920"
+splot "data/vortex-0.050000-0.250000-200-920.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.35,0.0
+set title "960"
+splot "data/vortex-0.050000-0.250000-200-960.dat" u 1:2:3 notitle
+set size 0.4,0.4
+set origin 0.65,0.0
+set title "1000"
+splot "data/vortex-0.050000-0.250000-200-1000.dat" u 1:2:3 notitle
+
+unset multiplot
