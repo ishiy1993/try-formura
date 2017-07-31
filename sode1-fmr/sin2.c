@@ -8,7 +8,7 @@ double v0 = 0.1;
 double p0 = 1.0;
 double B0 = 1.0;
 double B1 = 0.5;
-double k = 2*M_PI/50.0;
+double k = 2*M_PI*sqrt(2)/50.0;
 
 double velcX(double x, double y, double t) {
     return u0;
