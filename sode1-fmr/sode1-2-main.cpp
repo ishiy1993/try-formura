@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     Formura_Init(&navi, MPI_COMM_WORLD);
 
     double cfl = 0.05;
-    double s = 0.5;
+    double s = 0.0;
     double h = 100.0/NX;
     double dt = cfl*h;
     int NT = 1/dt;
@@ -97,6 +97,9 @@ int main(int argc, char **argv) {
     double l1_y = 0;
 
     double t = navi.time_step * dt;
+    char fn[256];
+    sprintf(fn, "data/%s-%f-%f-%d-%d-error.dat", problem, cfl, s, NX, navi.time_step);
+    FILE *fp = fopen(fn, "w");
     for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
         double x = (ix + navi.offset_x)*h;
         for(int iy = navi.lower_y; iy < navi.upper_y; ++iy) {
@@ -105,11 +108,14 @@ int main(int argc, char **argv) {
             double db_x = b_x[ix][iy] - dens_x(x,y,t);
             double db_y = b_y[ix][iy] - dens_y(x,y,t);
 
+            fprintf(fp, "%f %f %e %e %e\n", x, y, db, db_x, db_y);
             l1 += fabs(db);
             l1_x += fabs(db_x);
             l1_y += fabs(db_y);
         }
+        fprintf(fp,"\n");
     }
+    fclose(fp);
 
     char efn[256];
     sprintf(efn, "data/%s.err", problem);
