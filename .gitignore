@@ -24,3 +24,5 @@ normal-4th-order-fmr/*log
 !sode1-fmr/gauss.h
 !sode1-fmr/sin.c
 !sode1-fmr/sin.h
+!sode1-fmr/vortex.c
+!sode1-fmr/vortex.h
