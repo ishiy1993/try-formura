@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_my_rank);
     Formura_Init(&navi, MPI_COMM_WORLD);
 
-    double cfl = 0.1;
-    double s = 0.5;
+    double cfl = 0.05;
+    double s = 0.25;
     double dx = 100.0/NX;
     double dt = cfl*dx;
     int NT = 10/dt;
@@ -49,11 +49,11 @@ int main(int argc, char **argv) {
     while(navi.time_step <= NT) {
         double t = navi.time_step * dt;
 
-        if ( navi.time_step % 100 == 0 ) {
+        if ( navi.time_step % 1000 == 0 ) {
             printf("it = %d: t = %f\n", navi.time_step, t);
 
             char fn[256];
-            sprintf(fn, "data/%s-%.2f-%f-%d-%f.dat", problem, cfl, s, NX, t);
+            sprintf(fn, "data/%s-%.2f-%.2f-%d-%.1f-%f.dat", problem, cfl, s, NX, d, t);
             FILE *fp = fopen(fn, "w");
 
             for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {

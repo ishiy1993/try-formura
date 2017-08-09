@@ -1,7 +1,7 @@
 #include <math.h>
 
 double x0 = 50.0; // the center of range
-double d = 0.5; // the half length of smoothing region
+double d = 1.0; // the half length of smoothing region
 double bL = 1.0/1.0;
 double bR = 1.0/0.125;
 double uL = 0.0;

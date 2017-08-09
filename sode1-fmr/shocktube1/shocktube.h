@@ -3,6 +3,8 @@
 
 #define problem "shocktube"
 
+extern double d;
+
 double dens(double x);
 double dens_x(double x);
 double dens_xx(double x);
