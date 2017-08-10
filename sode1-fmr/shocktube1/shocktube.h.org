@@ -29,5 +29,4 @@ double pres_t(double x);
 double pres_tt(double x);
 double pres_xt(double x);
 double pres_xtt(double x);
-
 #endif

@@ -1,7 +1,9 @@
 #!/bin/bash
 
+n=$(1:-8)
+
 echo $(date +"%F %T") $(grep "intra" sode1-1.yaml)
-cmake -D CMAKE_C_COMPILER=$(which mpicc) -D CMAKE_CXX_COMPILER=$(which mpicxx) .
-time make -j 8 all
-mpirun -n 1 ./main
+time make sode1-1.c
+time make -j ${n}
+time make run
 echo $(date +"%F %T")
