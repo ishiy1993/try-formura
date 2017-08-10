@@ -1,6 +1,6 @@
 initial_walls:
-    x: [100]
-intra_node_shape: [1000]
-monitor_interval: 4
+    x: [1000]
+intra_node_shape: [10000]
+monitor_interval: 100
 mpi_grid_shape: [1]
-temporal_blocking_interval: 2
+temporal_blocking_interval: 50

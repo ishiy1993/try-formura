@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo $(date +"%F %T") $(grep "intra" sode1-1.yaml)
+cmake -D CMAKE_C_COMPILER=$(which mpicc) -D CMAKE_CXX_COMPILER=$(which mpicxx) .
+time make -j 8 all
+mpirun -n 1 ./main
+echo $(date +"%F %T")

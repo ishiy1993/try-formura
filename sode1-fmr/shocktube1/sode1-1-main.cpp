@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     Formura_Init(&navi, MPI_COMM_WORLD);
 
     double cfl = 0.05;
-    double s = 0.25;
+    double s = 0.1;
     double dx = 100.0/NX;
     double dt = cfl*dx;
     int NT = 10/dt;
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     while(navi.time_step <= NT) {
         double t = navi.time_step * dt;
 
-        if ( navi.time_step % 1000 == 0 ) {
+        if ( navi.time_step % 100 == 0 ) {
             printf("it = %d: t = %f\n", navi.time_step, t);
 
             char fn[256];
