@@ -1,8 +1,8 @@
 dimension :: 1
 axes :: x
 
-double :: cfl = 0.1
-double :: vis = 0.5
+double :: cfl = 0.05
+double :: vis = 1.0
 double :: h = 100/NX
 double :: dt = cfl*h
 double :: gm = 1.4
@@ -10,7 +10,12 @@ double :: gm = 1.4
 d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - h*(a_x[i+1] - a_x[i-1])/4)/h/h
 d_xxx = fun(a,a_x) (a_x[i+1] + a_x[i-1] - 2*a_x[i])/h/h
 
-smoo = fun(a) -vis*a[i] + vis*(a[i+1] + a[i-1])/2
+begin function (b_vis,u_vis,p_vis) = smoo((b,u,p),(b_x,u_x,p_x))
+c = (gm*p*b)**(1/2)
+b_vis = 0.0
+u_vis = 0.0
+p_vis = if u_x < 0 then vis*(-c*u_x*h/b + (gm+1)/2 * u_x**2 * h**2) else 0
+end function
 
 begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x))
 b_t = ((b * u_x) - (b_x * u))
@@ -68,11 +73,11 @@ q_ttx = d_ttx(qp,qp_x)
 q' = qh + dt*q_t/2 - dt*dt*q_tt/12
 q_x' = qh_x + dt*q_tx/2 - dt*dt*q_ttx/12
 
-qp' = q' + dt*q_t + dt*dt*q_tt/2 + smoo(qp)
-qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2 + smoo(qp_x)
+qp' = q' + dt*q_t + dt*dt*q_tt/2 + smoo(qp, qp_x)
+qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2
 
-qh' = q' + dt*q_t/2 + dt*dt*q_tt/12 + smoo(qh)
-qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12 + smoo(qh_x)
+qh' = q' + dt*q_t/2 + dt*dt*q_tt/12 + smoo(qh, qh_x)
+qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12
 
 (b',u',p') = q'
 (bp',up',pp') = qp'
