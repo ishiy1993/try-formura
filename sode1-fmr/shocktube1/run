@@ -1,8 +1,11 @@
 #!/bin/bash
 
-n=$(1:-8)
+n=${1:-8}
+
+echo ${n}
 
 echo $(date +"%F %T") $(grep "intra" sode1-1.yaml)
+make clean
 time make sode1-1.c
 time make -j ${n}
 time make run

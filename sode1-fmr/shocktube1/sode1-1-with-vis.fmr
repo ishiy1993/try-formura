@@ -3,8 +3,8 @@ axes :: x
 
 double :: cfl = 0.05
 double :: s = 0.0
+double :: a = 0.5
 double :: h = 100/NX
-double :: a = -3.0*h
 double :: dt = cfl*h
 double :: gm = 1.4
 
@@ -14,34 +14,11 @@ d_xxxx = fun(a,a_x) 12*(-(a[i+1] + a[i-1] - 2*a[i])/h + (a_x[i+1] - a_x[i-1])/2)
 
 smoo = fun(a) -s*a[i] + s*(a[i+1] + a[i-1])/2
 
-begin function vis = viscosity(b,u_x,p)
-vis = if u_x < 0 \
-    then a * (gm*p*b)**(1/2) * u_x / b \
-    else 0.0
-end function
-
-begin function vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
-vis_x = if u_x < 0 \
-    then a * gm**2 * p * (p*(2*b*u_xx - b_x*u_x) + b*p_x*u_x)/2/(gm*b*p)**(3/2) \
-    else 0.0
-end function
-
-begin function vis_xx = viscosity_xx(b,b_x,b_xx,u_x,u_xx,u_xxx,p,p_x,p_xx)
-vis_xx = if u_x < 0 \
-    then a * gm**3 * p / (4*(gm*b*p)**(5/2)) * (2*b*p*(b*(p_xx*u_x + 2*p_x*u_xx) - b_x*p_x*u_x) + p**2 * (-2*b*b_xx*u_x - 4*b*b_x*u_xx + 3*b_x**2*u_x + 4*b**2*u_xxx) - b**2*p_x**2*u_x) \
-    else 0.0
-end function
-
-begin function vis_xxx = viscosity_xxx(b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx,p,p_x,p_xx,p_xxx)
-vis_xxx = if u_x < 0 \
-    then a * (gm*b*p)**(1/2) / (8*b**4*p**3) * (3*b**2*p*p_x*(b_x*p_x*u_x - 2*b*(p_xx*u_x + p_x*u_xx)) + b*p**2*(2*b*(p_x*(6*b*u_xxx - 3*b_xx*u_x) + 2*b*(p_xxx*u_x + 3*p_xx*u_xx)) + 9*b_x**2*p_x*u_x - 6*b*b_x*(p_xx*u_x + 2*p_x*u_xx)) + p**3*(18*b*b_x**2*u_xx - 15*b_x**3*u_x + 4*b**2*(-b_xxx*u_x-3*b_xx*u_xx+2*b*u_xxxx) - 6*b*b_x*(2*b*u_xxx - 3*b_xx*u_x)) + 3*b**3*p_x**3*u_x) \
-    else 0.0
-end function
-
 begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x))
 u_xx = d_xx(u,u_x)
-vis = viscosity(b,u_x,p)
-vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
+c = (gm*p*b)**(1/2)
+vis = a * c * u_x / b
+vis_x = a * c * (-b_x*u_x/b/b + u_xx/b)
 b_t = ((b * u_x) - (b_x * u))
 u_t = (-(((u * u_x) + (b * p_x)) + (b * vis_x)))
 p_t = (-(((((gm * p) * u_x) + ((gm * vis) * u_x)) + (u * p_x)) + (u * vis_x)))
@@ -52,9 +29,10 @@ b_xx = d_xx(b,b_x)
 u_xx = d_xx(u,u_x)
 p_xx = d_xx(p,p_x)
 u_xxx = d_xxx(u,u_x)
-vis = viscosity(b,u_x,p)
-vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
-vis_xx = viscosity_xx(b,b_x,b_xx,u_x,u_xx,u_xxx,p,p_x,p_xx)
+c = (gm*p*b)**(1/2)
+vis = a * c * u_x / b
+vis_x = a * c * (-b_x*u_x/b/b + u_xx/b)
+vis_xx = a * c * ((-b_xx/b/b + 2*b_x*b_x/b/b/b)*u_x - 2*b_x*u_xx/b/b + u_xxx/b)
 b_tt = ((((-((b * b) * p_xx)) - ((b * b) * vis_xx)) + ((b_xx * u) * u)) - (2.0 * ((u_xx * b) * u)))
 u_tt = ((((((((((((2.0 * ((b * u) * p_xx)) + ((b * vis_xx) * u)) + ((b * vis_xx) * u)) + (2.0 * ((b_x * p_x) * u))) + (2.0 * ((b_x * vis_x) * u))) + ((u_x * b) * p_x)) + (((u_x * b) * p_x) * gm)) + (((u_x * b) * vis_x) * gm)) + (2.0 * ((u_x * u_x) * u))) + (((u_xx * b) * p) * gm)) + (((u_xx * b) * vis) * gm)) + ((u_xx * u) * u))
 p_tt = ((((((((((((((((((((((((b * p) * gm) * p_xx) + (((b * p) * vis_xx) * gm)) + ((b * p_x) * p_x)) + (((b * vis) * gm) * p_xx)) + ((b * vis_x) * p_x)) + (((b * vis_xx) * vis) * gm)) + (((b_x * p) * p_x) * gm)) + (((b_x * p_x) * vis) * gm)) + (((b_x * vis_x) * p) * gm)) + (((b_x * vis_x) * vis) * gm)) + ((u * u) * p_xx)) + ((((u_x * u_x) * p) * gm) * gm)) + (((u_x * u_x) * p) * gm)) + (2.0 * ((u_x * p_x) * u))) + (2.0 * (((u_x * p_x) * u) * gm))) + ((((u_x * u_x) * vis) * gm) * gm)) + (((u_x * u_x) * vis) * gm)) + (((u_x * vis_x) * gm) * u)) + (((u_x * vis_x) * u) * gm)) + (2.0 * (((u_xx * p) * u) * gm))) + (2.0 * (((u_xx * u) * vis) * gm))) + ((vis_xx * u) * u))
@@ -65,9 +43,10 @@ b_xx = d_xx(b,b_x)
 u_xx = d_xx(u,u_x)
 p_xx = d_xx(p,p_x)
 u_xxx = d_xxx(u,u_x)
-vis = viscosity(b,u_x,p)
-vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
-vis_xx = viscosity_xx(b,b_x,b_xx,u_x,u_xx,u_xxx,p,p_x,p_xx)
+c = (gm*p*b)**(1/2)
+vis = a * c * u_x / b
+vis_x = a * c * (-b_x*u_x/b/b + u_xx/b)
+vis_xx = a * c * ((-b_xx/b/b + 2*b_x*b_x/b/b/b)*u_x - 2*b_x*u_xx/b/b + u_xxx/b)
 b_tx = ((-(b_xx * u)) + (u_xx * b))
 u_tx = ((((((-(b * p_xx)) - (b * vis_xx)) - (b_x * p_x)) - (b_x * vis_x)) - (u_x * u_x)) - (u_xx * u))
 p_tx = (((((((-(u * p_xx)) - (u_x * p_x)) - ((u_x * p_x) * gm)) - ((u_x * vis_x) * gm)) - ((u_xx * p) * gm)) - ((u_xx * vis) * gm)) - (vis_xx * u))
@@ -81,10 +60,11 @@ u_xxx = d_xxx(u,u_x)
 p_xx = d_xx(p,p_x)
 p_xxx = d_xxx(p,p_x)
 u_xxxx = d_xxxx(u,u_x)
-vis = viscosity(b,u_x,p)
-vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
-vis_xx = viscosity_xx(b,b_x,b_xx,u_x,u_xx,u_xxx,p,p_x,p_xx)
-vis_xxx = viscosity_xxx(b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx,p,p_x,p_xx,p_xxx)
+c = (gm*p*b)**(1/2)
+vis = a * c * u_x / b
+vis_x = a * c * (-b_x*u_x/b/b + u_xx/b)
+vis_xx = a * c * ((-b_xx/b/b + 2*b_x*b_x/b/b/b)*u_x - 2*b_x*u_xx/b/b + u_xxx/b)
+vis_xxx = a * c * ((-b_xxx/b/b + 6*b_x*b_xx/b/b/b - 6*b_x*b_x*b_x/b/b/b/b)*u_x + 3*(-b_xx/b/b + 2*b_x*b_x/b/b/b)*u_xx - 3*b_x*u_xxx/b/b + u_xxxx/b)
 b_ttx = (((((((((-((b * b) * p_xxx)) - (2.0 * ((b * u_xxx) * u))) - ((b * b) * vis_xxx)) - (2.0 * ((b_x * b) * p_xx))) - (2.0 * ((b_x * b) * vis_xx))) + ((b_xxx * u) * u)) + (2.0 * ((u_x * b_xx) * u))) - (2.0 * ((u_xx * b_x) * u))) - (2.0 * ((u_xx * u_x) * b)))
 u_ttx = ((((((((((((((((((((((((((((b * p) * u_xxx) * gm) + (2.0 * ((b * u) * p_xxx))) + ((b * u) * vis_xxx)) + (((b * u_xxx) * vis) * gm)) + ((b * vis_xxx) * u)) + (4.0 * ((b_x * u) * p_xx))) + ((b_x * vis_xx) * u)) + (3.0 * ((b_x * vis_xx) * u))) + (2.0 * ((p_x * b_xx) * u))) + (2.0 * ((u_x * u_x) * u_x))) + (((u_x * b) * gm) * p_xx)) + (3.0 * ((u_x * b) * p_xx))) + ((u_x * b) * vis_xx)) + (((u_x * b) * vis_xx) * gm)) + (3.0 * ((u_x * b_x) * p_x))) + (((u_x * b_x) * p_x) * gm)) + (2.0 * ((u_x * b_x) * vis_x))) + (((u_x * b_x) * vis_x) * gm)) + ((u_xx * b) * p_x)) + (2.0 * (((u_xx * b) * p_x) * gm))) + (2.0 * (((u_xx * b) * vis_x) * gm))) + (((u_xx * b_x) * p) * gm)) + (((u_xx * b_x) * vis) * gm)) + (6.0 * ((u_xx * u_x) * u))) + ((u_xxx * u) * u)) + (2.0 * ((vis_x * b_xx) * u)))
 p_ttx = ((((((((((((((((((((((((((((((((((((((((((((((((b * p) * gm) * p_xxx) + (((b * p) * gm) * vis_xxx)) + (((b * p_x) * gm) * p_xx)) + (2.0 * ((b * p_x) * p_xx))) + ((b * p_x) * vis_xx)) + (((b * p_x) * vis_xx) * gm)) + (((b * vis) * gm) * p_xxx)) + (((b * vis) * gm) * vis_xxx)) + (((b * vis_x) * gm) * p_xx)) + ((b * vis_x) * p_xx)) + (((b * vis_x) * vis_xx) * gm)) + (2.0 * (((b_x * p) * gm) * p_xx))) + (2.0 * (((b_x * p) * vis_xx) * gm))) + ((b_x * p_x) * p_x)) + (((b_x * p_x) * p_x) * gm)) + (2.0 * (((b_x * vis) * gm) * p_xx))) + (((b_x * vis_x) * vis_x) * gm)) + ((b_x * vis_x) * p_x)) + (2.0 * (((b_x * vis_x) * p_x) * gm))) + (2.0 * (((b_x * vis_xx) * vis) * gm))) + (((p * p_x) * b_xx) * gm)) + (2.0 * (((p * u_xxx) * u) * gm))) + (((p_x * b_xx) * vis) * gm)) + ((u * u) * p_xxx)) + ((u * vis_xxx) * u)) + (2.0 * ((u_x * u_x) * p_x))) + ((((u_x * u_x) * p_x) * gm) * gm)) + (3.0 * (((u_x * u_x) * p_x) * gm))) + (2.0 * (((u_x * u) * gm) * p_xx))) + (4.0 * ((u_x * u) * p_xx))) + ((((u_x * u_x) * vis_x) * gm) * gm)) + (2.0 * (((u_x * u_x) * vis_x) * gm))) + (((u_x * vis_xx) * gm) * u)) + ((u_x * vis_xx) * u)) + (((u_x * vis_xx) * u) * gm)) + (2.0 * ((u_xx * p_x) * u))) + (4.0 * (((u_xx * p_x) * u) * gm))) + (2.0 * ((((u_xx * u_x) * p) * gm) * gm))) + (4.0 * (((u_xx * u_x) * p) * gm))) + (2.0 * ((((u_xx * u_x) * vis) * gm) * gm))) + (4.0 * (((u_xx * u_x) * vis) * gm))) + (((u_xx * vis_x) * gm) * u)) + (3.0 * (((u_xx * vis_x) * u) * gm))) + (2.0 * (((u_xxx * u) * vis) * gm))) + (((vis_x * b_xx) * vis) * gm)) + (((vis_x * p) * b_xx) * gm))
@@ -123,3 +103,4 @@ qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12 + smoo(qh_x)
 (bp_x',up_x',pp_x') = qp_x'
 (bh_x',uh_x',ph_x') = qh_x'
 end function
+

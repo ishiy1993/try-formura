@@ -1,5 +1,5 @@
 initial_walls:
-    x: [100]
+    x: [500]
 intra_node_shape: [1000]
 monitor_interval: 10
 mpi_grid_shape: [1]
