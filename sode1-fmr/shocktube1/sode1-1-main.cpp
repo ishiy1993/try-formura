@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
     double cfl = 0.05;
     double s = 0.0;
     double dx = 100.0/NX;
-    double a = 3.0*dx;
+    double a = 2.25*dx;
     double dt = cfl*dx;
     int NT = 10/dt;
     init(dx, dt, navi);

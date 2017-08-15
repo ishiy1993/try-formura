@@ -4,7 +4,7 @@ axes :: x
 double :: cfl = 0.05
 double :: s = 0.0
 double :: h = 100/NX
-double :: a = -3.0*h
+double :: a = 2.25
 double :: dt = cfl*h
 double :: gm = 1.4
 
@@ -16,25 +16,25 @@ smoo = fun(a) -s*a[i] + s*(a[i+1] + a[i-1])/2
 
 begin function vis = viscosity(b,u_x,p)
 vis = if u_x < 0 \
-    then a * (gm*p*b)**(1/2) * u_x / b \
+    then - a * (gm*p*b)**(1/2) * u_x * h / b \
     else 0.0
 end function
 
 begin function vis_x = viscosity_x(b,b_x,u_x,u_xx,p,p_x)
 vis_x = if u_x < 0 \
-    then a * gm**2 * p * (p*(2*b*u_xx - b_x*u_x) + b*p_x*u_x)/2/(gm*b*p)**(3/2) \
+    then - a * gm**2 * p * h * (p*(2*b*u_xx - b_x*u_x) + b*p_x*u_x)/2/(gm*b*p)**(3/2) \
     else 0.0
 end function
 
 begin function vis_xx = viscosity_xx(b,b_x,b_xx,u_x,u_xx,u_xxx,p,p_x,p_xx)
 vis_xx = if u_x < 0 \
-    then a * gm**3 * p / (4*(gm*b*p)**(5/2)) * (2*b*p*(b*(p_xx*u_x + 2*p_x*u_xx) - b_x*p_x*u_x) + p**2 * (-2*b*b_xx*u_x - 4*b*b_x*u_xx + 3*b_x**2*u_x + 4*b**2*u_xxx) - b**2*p_x**2*u_x) \
+    then - a * gm**3 * p * h / (4*(gm*b*p)**(5/2)) * (2*b*p*(b*(p_xx*u_x + 2*p_x*u_xx) - b_x*p_x*u_x) + p**2 * (-2*b*b_xx*u_x - 4*b*b_x*u_xx + 3*b_x**2*u_x + 4*b**2*u_xxx) - b**2*p_x**2*u_x) \
     else 0.0
 end function
 
 begin function vis_xxx = viscosity_xxx(b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx,p,p_x,p_xx,p_xxx)
 vis_xxx = if u_x < 0 \
-    then a * (gm*b*p)**(1/2) / (8*b**4*p**3) * (3*b**2*p*p_x*(b_x*p_x*u_x - 2*b*(p_xx*u_x + p_x*u_xx)) + b*p**2*(2*b*(p_x*(6*b*u_xxx - 3*b_xx*u_x) + 2*b*(p_xxx*u_x + 3*p_xx*u_xx)) + 9*b_x**2*p_x*u_x - 6*b*b_x*(p_xx*u_x + 2*p_x*u_xx)) + p**3*(18*b*b_x**2*u_xx - 15*b_x**3*u_x + 4*b**2*(-b_xxx*u_x-3*b_xx*u_xx+2*b*u_xxxx) - 6*b*b_x*(2*b*u_xxx - 3*b_xx*u_x)) + 3*b**3*p_x**3*u_x) \
+    then - a * (gm*b*p)**(1/2) * h / (8*b**4*p**3) * (3*b**2*p*p_x*(b_x*p_x*u_x - 2*b*(p_xx*u_x + p_x*u_xx)) + b*p**2*(2*b*(p_x*(6*b*u_xxx - 3*b_xx*u_x) + 2*b*(p_xxx*u_x + 3*p_xx*u_xx)) + 9*b_x**2*p_x*u_x - 6*b*b_x*(p_xx*u_x + 2*p_x*u_xx)) + p**3*(18*b*b_x**2*u_xx - 15*b_x**3*u_x + 4*b**2*(-b_xxx*u_x-3*b_xx*u_xx+2*b*u_xxxx) - 6*b*b_x*(2*b*u_xxx - 3*b_xx*u_x)) + 3*b**3*p_x**3*u_x) \
     else 0.0
 end function
 
