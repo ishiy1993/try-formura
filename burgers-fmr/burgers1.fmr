@@ -1,0 +1,54 @@
+dimension :: 1
+axes :: x
+
+double :: cfl = 0.1
+double :: s = 0.0
+double :: vis = 0.0
+double :: h = 5/NX
+double :: dt = cfl*h
+
+d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - h*(a_x[i+1] - a_x[i-1])/4)/h/h
+d_xxx = fun(a,a_x) (a_x[i+1] + a_x[i-1] - 2*a_x[i])/h/h
+
+smoo = fun(a) -s*a[i] + s*(a[i+1] + a[i-1])/2
+
+begin function (u_t) = d_t((u),(u_x))
+u_t = ((-u) * u_x)
+end function
+
+begin function (u_tt) = d_tt((u),(u_x))
+u_xx = d_xx(u,u_x)
+u_tt = ((2.0 * ((u_x * u_x) * u)) + ((u_xx * u) * u))
+end function
+
+begin function (u_tx) = d_tx((u),(u_x))
+u_xx = d_xx(u,u_x)
+u_tx = ((-(u_x * u_x)) - (u_xx * u))
+end function
+
+begin function (u_ttx) = d_ttx((u),(u_x))
+u_xx = d_xx(u,u_x)
+u_xxx = d_xxx(u,u_x)
+u_ttx = (((2.0 * ((u_x * u_x) * u_x)) + (6.0 * ((u_xx * u_x) * u))) + ((u_xxx * u) * u))
+end function
+
+begin function (u,up,uh,u_x,up_x,uh_x) = init()
+double [] :: u = 0,up = 0,uh = 0,u_x = 0,up_x = 0,uh_x = 0
+end function
+
+begin function (u',up',uh',u_x',up_x',uh_x') = step(u,up,uh,u_x,up_x,uh_x)
+u_t = d_t(up,up_x)
+u_tt = d_tt(up,up_x)
+u_tx = d_tx(up,up_x)
+u_ttx = d_ttx(up,up_x)
+
+u' = uh + dt*u_t/2 - dt*dt*u_tt/12
+u_x' = uh_x + dt*u_tx/2 - dt*dt*u_ttx/12
+
+up' = u' + dt*u_t + dt*dt*u_tt/2 + smoo(up)
+up_x' = u_x' + dt*u_tx + dt*dt*u_ttx/2 + smoo(up_x)
+
+uh' = u' + dt*u_t/2 + dt*dt*u_tt/12 + smoo(uh)
+uh_x' = u_x' + dt*u_tx/2 + dt*dt*u_ttx/12 + smoo(uh_x)
+end function
+
