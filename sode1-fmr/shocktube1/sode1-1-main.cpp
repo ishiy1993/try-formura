@@ -6,7 +6,7 @@
 
 #define problem "shocktube"
 double x0 = 50.0; // the center of range
-double d = 1.0; // the half length of smoothing region
+double d = 0.5; // the half length of smoothing region
 double bL = 1.0/1.0;
 double bR = 1.0/0.125;
 double uL = 0.0;
@@ -191,9 +191,10 @@ int main(int argc, char **argv) {
     Formura_Init(&navi, MPI_COMM_WORLD);
 
     double cfl = 0.05;
-    double s = 0.0;
+    double s = 0.1;
+    double a = 1.15;
+    double a2 = (1.4+1)/2.0 * a;
     double dx = 100.0/NX;
-    double a = 2.25*dx;
     double dt = cfl*dx;
     int NT = 10/dt;
     init(dx, dt, navi);
@@ -208,7 +209,7 @@ int main(int argc, char **argv) {
             printf("it = %d: t = %f\n", navi.time_step, t);
 
             char fn[256];
-            sprintf(fn, "data/%s-%.2f-%.2f-%.3f-%d-%.1f-%f.dat", problem, cfl, s, a, NX, d, t);
+            sprintf(fn, "data/%s-%.2f-%.2f-%.3f-%.3f-%d-%.2f-%f.dat", problem, cfl, s, a, a2, NX, d, t);
             FILE *fp = fopen(fn, "w");
 
             for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
@@ -221,6 +222,6 @@ int main(int argc, char **argv) {
         Formura_Forward(&navi);
     }
 
-    printf("params: %s-%.2f-%.2f-%.3f-%d-%.1f", problem, cfl, s, a, NX, d);
+    printf("params: %s-%.2f-%.2f-%.3f-%.3f-%d-%.2f", problem, cfl, s, a, a2, NX, d);
     MPI_Finalize();
 }
