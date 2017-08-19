@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
 
     double cfl = 0.05;
     double s = 0.0;
-    double a = 0.2;
+    double a = 1.00;
     double dx = 100.0/NX;
     double dt = cfl*dx;
     int NT = 10/dt;
