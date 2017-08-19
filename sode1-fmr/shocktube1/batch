@@ -1,0 +1,15 @@
+#/usr/bin/zsh
+
+job () {
+  echo "--------------------------------------------------------------"
+  vis=${1:?Need a param}
+  sed -i -E "s/(double :: vis = ).*/\1${vis}/" sode1-1.fmr
+  sed -i -E "s/(double a = ).*/\1${vis};/" sode1-1-main.cpp
+  
+  grep 'double :: vis' sode1-1.fmr
+  grep 'double a' sode1-1-main.cpp
+  
+  docker run -it --rm -v $PWD:/work -u $UID:$GID ishiy1993/formura-bin ./run
+}
+
+job 0.23
