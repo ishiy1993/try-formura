@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo $(date +"%F %T") $(grep "intra" sode1-3.yaml)
+time make sode1-3.c
+time make -j 16
+time make run
+echo $(date +"%F %T")

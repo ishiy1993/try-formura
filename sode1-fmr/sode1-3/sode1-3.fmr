@@ -451,7 +451,7 @@ p_ttz = ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
 end function
 
 begin function (b,u,v,w,p,bp,up,vp,wp,pp,bh,uh,vh,wh,ph,b_x,u_x,v_x,w_x,p_x,bp_x,up_x,vp_x,wp_x,pp_x,bh_x,uh_x,vh_x,wh_x,ph_x,b_y,u_y,v_y,w_y,p_y,bp_y,up_y,vp_y,wp_y,pp_y,bh_y,uh_y,vh_y,wh_y,ph_y,b_z,u_z,v_z,w_z,p_z,bp_z,up_z,vp_z,wp_z,pp_z,bh_z,uh_z,vh_z,wh_z,ph_z) = init()
-double :: b = 0,u = 0,v = 0,w = 0,p = 0,bp = 0,up = 0,vp = 0,wp = 0,pp = 0,bh = 0,uh = 0,vh = 0,wh = 0,ph = 0,b_x = 0,u_x = 0,v_x = 0,w_x = 0,p_x = 0,bp_x = 0,up_x = 0,vp_x = 0,wp_x = 0,pp_x = 0,bh_x = 0,uh_x = 0,vh_x = 0,wh_x = 0,ph_x = 0,b_y = 0,u_y = 0,v_y = 0,w_y = 0,p_y = 0,bp_y = 0,up_y = 0,vp_y = 0,wp_y = 0,pp_y = 0,bh_y = 0,uh_y = 0,vh_y = 0,wh_y = 0,ph_y = 0,b_z = 0,u_z = 0,v_z = 0,w_z = 0,p_z = 0,bp_z = 0,up_z = 0,vp_z = 0,wp_z = 0,pp_z = 0,bh_z = 0,uh_z = 0,vh_z = 0,wh_z = 0,ph_z = 0
+double [] :: b = 0,u = 0,v = 0,w = 0,p = 0,bp = 0,up = 0,vp = 0,wp = 0,pp = 0,bh = 0,uh = 0,vh = 0,wh = 0,ph = 0,b_x = 0,u_x = 0,v_x = 0,w_x = 0,p_x = 0,bp_x = 0,up_x = 0,vp_x = 0,wp_x = 0,pp_x = 0,bh_x = 0,uh_x = 0,vh_x = 0,wh_x = 0,ph_x = 0,b_y = 0,u_y = 0,v_y = 0,w_y = 0,p_y = 0,bp_y = 0,up_y = 0,vp_y = 0,wp_y = 0,pp_y = 0,bh_y = 0,uh_y = 0,vh_y = 0,wh_y = 0,ph_y = 0,b_z = 0,u_z = 0,v_z = 0,w_z = 0,p_z = 0,bp_z = 0,up_z = 0,vp_z = 0,wp_z = 0,pp_z = 0,bh_z = 0,uh_z = 0,vh_z = 0,wh_z = 0,ph_z = 0
 end function
 
 begin function (b',u',v',w',p',bp',up',vp',wp',pp',bh',uh',vh',wh',ph',b_x',u_x',v_x',w_x',p_x',bp_x',up_x',vp_x',wp_x',pp_x',bh_x',uh_x',vh_x',wh_x',ph_x',b_y',u_y',v_y',w_y',p_y',bp_y',up_y',vp_y',wp_y',pp_y',bh_y',uh_y',vh_y',wh_y',ph_y',b_z',u_z',v_z',w_z',p_z',bp_z',up_z',vp_z',wp_z',pp_z',bh_z',uh_z',vh_z',wh_z',ph_z') = step(b,u,v,w,p,bp,up,vp,wp,pp,bh,uh,vh,wh,ph,b_x,u_x,v_x,w_x,p_x,bp_x,up_x,vp_x,wp_x,pp_x,bh_x,uh_x,vh_x,wh_x,ph_x,b_y,u_y,v_y,w_y,p_y,bp_y,up_y,vp_y,wp_y,pp_y,bh_y,uh_y,vh_y,wh_y,ph_y,b_z,u_z,v_z,w_z,p_z,bp_z,up_z,vp_z,wp_z,pp_z,bh_z,uh_z,vh_z,wh_z,ph_z)
@@ -505,4 +505,3 @@ qh_z' = q_z' + dt*q_tz/2 + dt*dt*q_ttz/12 + smoo(qh_z)
 (bp_z',up_z',vp_z',wp_z',pp_z') = qp_z'
 (bh_z',uh_z',vh_z',wh_z',ph_z') = qh_z'
 end function
-

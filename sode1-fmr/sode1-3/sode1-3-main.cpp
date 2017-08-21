@@ -2,9 +2,139 @@
 #include <math.h>
 #include <stdio.h>
 #include "sode1-3.h"
-#include "sin3.h"
+/* #include "sin3.h" */
+
+#define problem "sin3"
 
 int mpi_my_rank;
+
+double u0 = 0.1;
+double v0 = 0.1;
+double w0 = 0.1;
+double p0 = 1.0;
+double B0 = 1.0;
+double B1 = 0.5;
+double k = 2*M_PI/50.0;
+
+double velcX(double x, double y, double z, double t) {
+    return u0;
+}
+
+double velcY(double x, double y, double z, double t) {
+    return v0;
+}
+
+double velcZ(double x, double y, double z, double t) {
+    return w0;
+}
+
+double pres(double x, double y, double z, double t) {
+    return p0;
+}
+
+double dens(double x, double y, double z, double t) {
+    return B0 + B1*sin(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double velcX_y(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_x(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_t(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_t(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_tt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_tt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_xt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_xt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_yt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_yt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_xtt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_xtt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcX_ytt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double velcY_ytt(double x, double y, double z, double t) {
+    return 0.0;
+}
+
+double dens_x(double x, double y, double z, double t) {
+    return -k*B1 * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_y(double x, double y, double z, double t) {
+    return -k*B1 * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_z(double x, double y, double z, double t) {
+    return -k*B1 * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_t(double x, double y, double z, double t) {
+    return k*B1*(u0+v0+w0) * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_tt(double x, double y, double z, double t) {
+    return -k*k*B1*(u0+v0+w0)*(u0+v0+w0) * sin(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_xt(double x, double y, double z, double t) {
+    return k*k*B1*(u0+v0+w0) * sin(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_xtt(double x, double y, double z, double t) {
+    return k*k*k*B1*(u0+v0+w0)*(u0+v0+w0) * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_yt(double x, double y, double z, double t) {
+    return k*k*B1*(u0+v0+w0) * sin(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_ytt(double x, double y, double z, double t) {
+    return k*k*k*B1*(u0+v0+w0)*(u0+v0+w0) * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_zt(double x, double y, double z, double t) {
+    return k*k*B1*(u0+v0+w0) * sin(-k*(x+y+z-(u0+v0+w0)*t));
+}
+
+double dens_ztt(double x, double y, double z, double t) {
+    return k*k*k*B1*(u0+v0+w0)*(u0+v0+w0) * cos(-k*(x+y+z-(u0+v0+w0)*t));
+}
 
 void init(double h, double dt, Formura_Navigator &navi) {
     for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
@@ -95,10 +225,9 @@ int main(int argc, char **argv) {
     printf("NT = %d\n", NT);
     printf("h = %f\n", h);
 
-    while(navi.time_step < NT) {
-        if(navi.time_step % T_MONITOR == 0) {
-            printf("it = %d\n", navi.time_step);
-
+    while(navi.time_step <= NT) {
+        printf("it = %d\n", navi.time_step);
+        if(navi.time_step % 20 == 0) {
             char fn[256];
             sprintf(fn, "data/%s-%f-%f-%d-%d.dat", problem, cfl, s, NX, navi.time_step);
             FILE *fp = fopen(fn, "w");
@@ -142,7 +271,7 @@ int main(int argc, char **argv) {
                 double db_y = b_y[ix][iy][iz] - dens_y(x,y,z,t);
                 double db_z = b_z[ix][iy][iz] - dens_z(x,y,z,t);
 
-                fprintf(fp, "%f %f %f %e %e %e %e\n", x, y, z, db, db_x, db_y, db_z);
+                fprintf(fp, "%f %f %f %f %f %f %f %f %e %e %e %e\n", x, y, z, b[ix][iy][iz], u[ix][iy][iz], v[ix][iy][iz], w[ix][iy][iz], p[ix][iy][iz], db, db_x, db_y, db_z);
                 l1 += fabs(db);
                 l1_x += fabs(db_x);
                 l1_y += fabs(db_y);
@@ -159,6 +288,7 @@ int main(int argc, char **argv) {
     FILE *efp = fopen(efn, "a");
     fprintf(efp, "%f %e %e %e %e %f %e %e %e %e\n", h, l1, l1_x, l1_y, l1_z, dt, l1/NX/NX/NX, l1_x/NX/NX/NX, l1_y/NX/NX/NX, l1_z/NX/NX/NX);
     fclose(efp);
+    printf("%d %f %e %e %e %e\n", NX, dt, l1/NX/NX/NX, l1_x/NX/NX/NX, l1_y/NX/NX/NX, l1_z/NX/NX/NX);
 
     MPI_Finalize();
 }

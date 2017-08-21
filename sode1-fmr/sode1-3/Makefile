@@ -1,15 +1,27 @@
-TARGET = sode1-3
-PROBLEM = sin3
+TARGET := sode1-3
+PROBLEM := sin3
 N = 1
+FLAG = -mcmodel=large -O2
+CCFLAG = $(FLAG) -std=gnu11
+CXXFLAG = $(FLAG) -I.
+CC = mpicc
+CXX = mpicxx
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 
-$(TARGET): $(TARGET)-main.cpp $(TARGET).c
-	mpicxx $(TARGET)-main.cpp $(TARGET).c $(PROBLEM).c $(TARGET)_internal_*.c -o $@ -mcmodel=medium -fpic -dynamic 
+.PHONY: all clean
+all: $(TARGET)
 
-$(TARGET).c: $(TARGET).fmr $(TARGET).yaml
+$(TARGET).c $(TARGET).h: $(TARGET).fmr $(TARGET).yaml
 	formura $(TARGET).fmr
+
+%.o: %.c
+	$(CC) $(CCFLAG) -c $< -o $@
+
+$(TARGET): $(TARGET)-main.cpp $(OBJS)
+	$(CXX) $(CXXFLAG) $^ -o $@
 
 run: $(TARGET)
 	mpirun -n $(N) ./$(TARGET)
 
 clean:
-	rm -f $(TARGET) $(TARGET).c $(TARGET).h $(TARGET)_internal_*.c
+	rm -f $(TARGET) $(TARGET).c $(TARGET).h $(TARGET)_internal_*.c *.o
