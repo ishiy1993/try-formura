@@ -1,3 +1,3 @@
 b[t,x]_t = b[t,x]*u[t,x]_x - b[t,x]_x*u[t,x]
-u[t,x]_t = -(u[t,x]*u[t,x]_x + b[t,x]*p[t,x]_x + b[t,x]*(-a*c*h*(u[t,x]_xx/b[t,x] - u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x]) + aa*h*h*(2*u[t,x]_x*u[t,x]_xx/b[t,x] - u[t,x]_x*u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x])))
-p[t,x]_t = -(gm*p[t,x]*u[t,x]_x + gm*(-a*c*u[t,x]_x/b[t,x] + aa*h*h*u[t,x]_x*u[t,x]_x/b[t,x])*u[t,x]_x + u[t,x]*p[t,x]_x + u[t,x]*(-a*c*h*(u[t,x]_xx/b[t,x] - u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x]) + aa*h*h*(2*u[t,x]_x*u[t,x]_xx/b[t,x] - u[t,x]_x*u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x])))
+u[t,x]_t = -(u[t,x]*u[t,x]_x + b[t,x]*p[t,x]_x + b[t,x]*(-a*(gm*b[t,x]*p[t,x])**(0.5)*h*(u[t,x]_xx/b[t,x] - u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x]) + aa*h*h*(2*u[t,x]_x*u[t,x]_xx/b[t,x] - u[t,x]_x*u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x])))
+p[t,x]_t = -(gm*p[t,x]*u[t,x]_x + gm*(-a*(gm*b[t,x]*p[t,x])**(0.5)*u[t,x]_x/b[t,x] + aa*h*h*u[t,x]_x*u[t,x]_x/b[t,x])*u[t,x]_x + u[t,x]*p[t,x]_x + u[t,x]*(-a*(gm*b[t,x]*p[t,x])**(0.5)*h*(u[t,x]_xx/b[t,x] - u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x]) + aa*h*h*(2*u[t,x]_x*u[t,x]_xx/b[t,x] - u[t,x]_x*u[t,x]_x*b[t,x]_x/b[t,x]/b[t,x])))
