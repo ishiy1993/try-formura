@@ -46,6 +46,19 @@ int main(int argc, char **argv) {
     printf("NT = %d\n", NT);
 
     while(navi.time_step < NT) {
+        printf("it = %d\n", navi.time_step);
+        char fn[256];
+        sprintf(fn, "data/%s-%.2f-%d-%d.dat", problem, cfl, NX, navi.time_step);
+        FILE *fp = fopen(fn, "w");
+
+        for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
+            double t = navi.time_step * dt;
+            double x = (ix + navi.offset_x)*dx;
+            double db = b[ix] - dens(x,t);
+            double db_x = b_x[ix] - dens_x(x,t);
+            fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %e %e\n", x, b[ix], u[ix], p[ix], b_x[ix], u_x[ix], p_x[ix], dens(x,t), velc(x,t), pres(x,t), dens_x(x,t), velc_x(x,t), pres_x(x,t), db, db_x);
+        }
+        fclose(fp);
         Formura_Forward(&navi);
     }
 
