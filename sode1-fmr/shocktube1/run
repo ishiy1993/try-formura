@@ -1,12 +1,22 @@
 #!/bin/bash
 
-n=${1:-16}
+TARGET=${1:?Need a target}
+vis=${2:?Need a viscocity}
+n=${3:-16}
 
+echo ${TARGET}
+echo ${vis}
 echo ${n}
 
-echo $(date +"%F %T") $(grep "intra" sode1-1.yaml)
+sed -i -E "s/(TARGET :=).*/\1 ${TARGET}/" Makefile
+sed -i -E "s/(double :: vis = ).*/\1${vis}/" ${TARGET}.fmr
+sed -i -E "s/(double a = ).*/\1${vis};/" ${TARGET}-main.cpp
+grep 'double :: vis' ${TARGET}.fmr
+grep 'double a' ${TARGET}-main.cpp
+
+echo $(date +"%F %T") $(grep "intra" ${TARGET}.yaml)
 make clean
-time make sode1-1.c
+time make ${TARGET}.c
 time make -j ${n}
 time make run
 echo $(date +"%F %T")
