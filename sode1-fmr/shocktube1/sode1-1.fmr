@@ -4,7 +4,7 @@ axes :: x
 double :: gm = 1.4
 double :: cfl = 0.05
 double :: s = 0.0
-double :: vis = 1.0
+double :: vis = 0.115
 double :: h = 100/NX
 double :: dt = cfl*h
 
@@ -20,8 +20,7 @@ sound_speed = fun(b,p) (gm*b*p)**(1/2)
 
 begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x))
 a = alpha(u_x)
-aa = (gm+1)/2 * a
-c = sound_speed(b,p)
+aa = (gm+1)*a/2
 b_xx = d_xx(b,b_x)
 b_xxx = d_xxx(b,b_x)
 b_xxxx = d_xxxx(b,b_x)
@@ -38,8 +37,7 @@ end function
 
 begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x))
 a = alpha(u_x)
-aa = (gm+1)/2 * a
-c = sound_speed(b,p)
+aa = (gm+1)*a/2
 b_xx = d_xx(b,b_x)
 b_xxx = d_xxx(b,b_x)
 b_xxxx = d_xxxx(b,b_x)
@@ -56,8 +54,7 @@ end function
 
 begin function (b_tx,u_tx,p_tx) = d_tx((b,u,p),(b_x,u_x,p_x))
 a = alpha(u_x)
-aa = (gm+1)/2 * a
-c = sound_speed(b,p)
+aa = (gm+1)*a/2
 b_xx = d_xx(b,b_x)
 b_xxx = d_xxx(b,b_x)
 b_xxxx = d_xxxx(b,b_x)
@@ -74,8 +71,7 @@ end function
 
 begin function (b_ttx,u_ttx,p_ttx) = d_ttx((b,u,p),(b_x,u_x,p_x))
 a = alpha(u_x)
-aa = (gm+1)/2 * a
-c = sound_speed(b,p)
+aa = (gm+1)*a/2
 b_xx = d_xx(b,b_x)
 b_xxx = d_xxx(b,b_x)
 b_xxxx = d_xxxx(b,b_x)
