@@ -21,21 +21,21 @@ double f(double x, double l, double r) {
     } else if (x >= x0 + d && x <= 2*x0 - d) {
         return r;
     } else if (x > x0 - d && x < x0 + d) {
-        return (l - r)*pow((x-x0)/d,5)/4.0 + (r - l)*pow((x-x0)/d,3)/4.0 + (r - l)*(x-x0)/d/2.0 + (r + l)/2.0;
+        return 3*(r - l)*pow((x-x0)/d,5)/16.0 - 5*(r - l)*pow((x-x0)/d,3)/8.0 + 15*(r - l)*(x-x0)/d/16.0 + (r + l)/2.0;
     } else if (x < d) {
-        return (r - l)*pow(x/d,5)/4.0 + (l - r)*pow(x/d,3)/4.0 + (l - r)*x/d/2.0 + (l + r)/2.0;
+        return 3*(l - r)*pow(x/d,5)/16.0 - 5*(l - r)*pow(x/d,3)/8.0 + 15*(l - r)*x/d/16.0 + (l + r)/2.0;
     } else {
-        return (r - l)*pow((x-2*x0)/d,5)/4.0 + (l - r)*pow((x-2*x0)/d,3)/4.0 + (l - r)*(x-2*x0)/d/2.0 + (l + r)/2.0;
+        return 3*(l - r)*pow((x-2*x0)/d,5)/16.0 - 5*(l - r)*pow((x-2*x0)/d,3)/8.0 + 15*(l - r)*(x-2*x0)/d/16.0 + (l + r)/2.0;
     }
 }
 
 double f_x(double x, double l, double r) {
     if (x > x0 - d && x < x0 + d) {
-        return 5*(l - r)*pow((x-x0)/d,4)/d/4.0 + (r - l)*pow((x-x0)/d,2)/d + (r + l)/2.0/d;
+        return 15*(r - l)*pow((x-x0)/d,4)/d/16.0 - 15*(r - l)*pow((x-x0)/d,2)/d/8.0 + 15*(r-l)/16.0/d;
     } else if (x < d) {
-        return 5*(r - l)*pow(x/d,4)/d/4.0 + (l - r)*pow(x/d,2)/d + (l + r)/2.0/d;
+        return 15*(l - r)*pow(x/d,4)/d/16.0 - 15*(l - r)*pow(x/d,2)/d/8.0 + 15*(l-r)/16.0/d;
     } else if (x > 2*x0 - d) {
-        return 5*(r - l)*pow((x-2*x0)/d,4)/d/4.0 + (l - r)*pow((x-2*x0)/d,2)/d + (l + r)/2.0/d;
+        return 15*(l - r)*pow((x-2*x0)/d,4)/d/16.0 - 15*(l - r)*pow((x-2*x0)/d,2)/d/8.0 + 15*(l-r)/16.0/d;
     } else {
         return 0.0;
     }
@@ -43,11 +43,11 @@ double f_x(double x, double l, double r) {
 
 double f_xx(double x, double l, double r) {
     if (x > x0 - d && x < x0 + d) {
-        return 5*(l - r)*pow((x-x0)/d,3)/d/d + 2*(r - l)*(x-x0)/d/d/d;
+        return 15*(r - l)*pow((x-x0)/d,3)/d/d/4.0 - 15*(r - l)*(x-x0)/d/d/d/4.0;
     } else if (x < d) {
-        return 5*(r - l)*pow(x/d,3)/d/d + 2*(l - r)*x/d/d/d;
+        return 15*(l - r)*pow(x/d,3)/d/d/4.0 - 15*(l - r)*x/d/d/d/4.0;
     } else if (x > 2*x0 - d) {
-        return 5*(r - l)*pow((x-2*x0)/d,3)/d/d + 2*(l - r)*(x-2*x0)/d/d/d;
+        return 15*(l - r)*pow((x-2*x0)/d,3)/d/d/4.0 - 15*(l - r)*(x-2*x0)/d/d/d/4.0;
     } else {
         return 0.0;
     }
@@ -55,11 +55,11 @@ double f_xx(double x, double l, double r) {
 
 double f_xxx(double x, double l, double r) {
     if (x > x0 - d && x < x0 + d) {
-        return 15*(l - r)*pow((x-x0)/d,2)/d/d/d + 2*(r - l)/d/d/d;
+        return 45*(r - l)*pow((x-x0)/d,2)/d/d/d/4.0 - 15*(r - l)/d/d/d/4.0;
     } else if (x < d) {
-        return 15*(r - l)*pow(x/d,2)/d/d/d + 2*(l - r)/d/d/d;
+        return 45*(l - r)*pow(x/d,2)/d/d/d/4.0 - 15*(l - r)/d/d/d/4.0;
     } else if (x > 2*x0 - d) {
-        return 15*(r - l)*pow((x-2*x0)/d,2)/d/d/d + 2*(l - r)/d/d/d;
+        return 45*(l - r)*pow((x-2*x0)/d,2)/d/d/d/4.0 - 15*(l - r)/d/d/d/4.0;
     } else {
         return 0.0;
     }
