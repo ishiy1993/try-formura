@@ -1,0 +1,3 @@
+r[t,x]_t = -r[t,x]*u[t,x]_x - r[t,x]_x*u[t,x]
+u[t,x]_t = -u[t,x]*u[t,x]_x - p[t,x]_x/r[t,x] + a*c*h*(r[t,x]_x*u[t,x]_x + r[t,x]*u[t,x]_xx)/r[t,x]
+p[t,x]_t = -u[t,x]*p[t,x]_x - gm*p[t,x]*u[t,x]_x + u[t,x]*a*c*h*(r[t,x]_x*u[t,x]_x + r[t,x]*u[t,x]_xx) + gm*u[t,x]_x*a*c*h*r[t,x]*u[t,x]_x
