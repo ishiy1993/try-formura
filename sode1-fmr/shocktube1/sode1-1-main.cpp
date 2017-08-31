@@ -16,7 +16,7 @@ double pR = 0.1;
 double gm = 1.4;
 
 double g(double x) {
-  return exp(-pow(3*x/d,2));
+  return exp(-pow(2*x/d,2));
 }
 
 double integral(double l, double r) {
@@ -67,11 +67,11 @@ double f_x(double x, double l, double r) {
 
 double f_xx(double x, double l, double r) {
   if (x > x0 - d && x < x0 + d) {
-    return -18*(x-x0)*(r-l)*g(x-x0)/integral(-d,d)/d/d;
+    return -8*(x-x0)*(r-l)*g(x-x0)/integral(-d,d)/d/d;
   } else if (x < d) {
-    return -18*x*(l-r)*g(x)/integral(-d,d)/d/d;
+    return -8*x*(l-r)*g(x)/integral(-d,d)/d/d;
   } else if (x > 2*x0 - d) {
-    return -18*(x-2*x0)*(l-r)*g(x-2*x0)/integral(-d,d)/d/d;
+    return -8*(x-2*x0)*(l-r)*g(x-2*x0)/integral(-d,d)/d/d;
   } else {
     return 0.0;
   }
@@ -79,11 +79,11 @@ double f_xx(double x, double l, double r) {
 
 double f_xxx(double x, double l, double r) {
   if (x > x0 - d && x < x0 + d) {
-    return 18*(-1 + 18*(x-x0)*(x-x0)/d/d)*(r-l)*g(x-x0)/integral(-d,d)/d/d;
+    return 8*(-1 + 8*(x-x0)*(x-x0)/d/d)*(r-l)*g(x-x0)/integral(-d,d)/d/d;
   } else if (x < d) {
-    return 18*(-1 + 18*x*x/d/d)*(l-r)*g(x)/integral(-d,d)/d/d;
+    return 8*(-1 + 8*x*x/d/d)*(l-r)*g(x)/integral(-d,d)/d/d;
   } else if (x > 2*x0 - d) {
-    return 18*(-1 + 18*(x-2*x0)*(x-2*x0)/d/d)*(l-r)*g(x-2*x0)/integral(-d,d)/d/d;
+    return 8*(-1 + 8*(x-2*x0)*(x-2*x0)/d/d)*(l-r)*g(x-2*x0)/integral(-d,d)/d/d;
   } else {
     return 0.0;
   }
@@ -217,12 +217,12 @@ int main(int argc, char **argv) {
   Formura_Init(&navi, MPI_COMM_WORLD);
 
   double cfl = 0.05;
-  double s = 0.0;
-  double a = 20;
+  double s = 0.25;
+  double a = 0.0;
   double aa = (1.4+1)*a/2;
   double dx = 100.0/NX;
   double dt = cfl*dx;
-  int NT = 10/dt;
+  int NT = 6/dt;
   init(dx, dt, navi);
 
   printf("NX = %d\n", NX);
@@ -231,11 +231,11 @@ int main(int argc, char **argv) {
   while(navi.time_step <= NT) {
     double t = navi.time_step * dt;
 
-    if ( navi.time_step % 100 == 0 ) {
+    if ( navi.time_step % 10 == 0 ) {
       printf("it = %d: t = %f\n", navi.time_step, t);
 
       char fn[256];
-      sprintf(fn, "data/%s-5-%.2f-%.2f-%.3f-%.3f-%d-%.2f-%f.dat", problem, cfl, s, a, aa, NX, d, t);
+      sprintf(fn, "data/%s-gauss-%.2f-%.2f-%.3f-%.3f-%d-%.2f-%f.dat", problem, cfl, s, a, aa, NX, d, t);
       FILE *fp = fopen(fn, "w");
 
       for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
@@ -248,6 +248,6 @@ int main(int argc, char **argv) {
     Formura_Forward(&navi);
   }
 
-  printf("params: %s-5-%.2f-%.2f-%.3f-%.3f-%d-%.2f", problem, cfl, s, a, aa, NX, d);
+  printf("params: %s-gauss-%.2f-%.2f-%.3f-%.3f-%d-%.2f", problem, cfl, s, a, aa, NX, d);
   MPI_Finalize();
 }
