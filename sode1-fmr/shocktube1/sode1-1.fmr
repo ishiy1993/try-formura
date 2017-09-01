@@ -3,8 +3,8 @@ axes :: x
 
 double :: gm = 1.4
 double :: cfl = 0.05
-double :: s = 0.25
-double :: vis = 0.0
+double :: s = 0.0
+double :: vis = 10
 double :: h = 100/NX
 double :: dt = cfl*h
 
