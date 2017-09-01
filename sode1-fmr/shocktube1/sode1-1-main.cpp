@@ -6,7 +6,7 @@
 
 #define problem "shocktube"
 double x0 = 50.0; // the center of range
-double d = 1.0; // the half length of smoothing region
+double d = 0.5; // the half length of smoothing region
 double bL = 1.0/1.0;
 double bR = 1.0/0.125;
 double uL = 0.0;
@@ -183,6 +183,12 @@ void init(double dx, double dt, Formura_Navigator &navi) {
         bh_x[ix] = dens_x(x) + dt*dens_xt(x)/2 + dt*dt*dens_xtt(x)/12;
         uh_x[ix] = velcX_x(x) + dt*velcX_xt(x)/2 + dt*dt*velcX_xtt(x)/12;
         ph_x[ix] = pres_x(x) + dt*pres_xt(x)/2 + dt*dt*pres_xtt(x)/12;
+        b_xx[ix] = dens_xx(x);
+        u_xx[ix] = velcX_xx(x);
+        p_xx[ix] = pres_xx(x);
+        b_xxx[ix] = dens_xxx(x);
+        u_xxx[ix] = velcX_xxx(x);
+        p_xxx[ix] = pres_xxx(x);
     }
 }
 
@@ -194,11 +200,11 @@ int main(int argc, char **argv) {
 
     double cfl = 0.05;
     double s = 0.0;
-    double a = 10;
+    double a = 0.0;
     double aa = (1.4+1)*a/2;
     double dx = 100.0/NX;
     double dt = cfl*dx;
-    int NT = 5.1/dt;
+    int NT = 1.1/dt;
     init(dx, dt, navi);
 
     printf("NX = %d\n", NX);
@@ -207,7 +213,7 @@ int main(int argc, char **argv) {
     while(navi.time_step <= NT) {
         double t = navi.time_step * dt;
 
-        if ( navi.time_step % 10 == 0 ) {
+        if ( navi.time_step % 1 == 0 ) {
             printf("it = %d: t = %f\n", navi.time_step, t);
 
             char fn[256];
@@ -217,7 +223,7 @@ int main(int argc, char **argv) {
             for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
                 double t = navi.time_step * dt;
                 double x = (ix + navi.offset_x)*dx;
-                fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", x, b[ix], 1.0/b[ix], u[ix], p[ix], b_x[ix], u_x[ix], p_x[ix], bp[ix], up[ix], pp[ix], bp_x[ix], up_x[ix], pp_x[ix], bh[ix], uh[ix], ph[ix], bh_x[ix], uh_x[ix], ph_x[ix]);
+                fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", x, b[ix], 1.0/b[ix], u[ix], p[ix], b_x[ix], u_x[ix], p_x[ix], bp[ix], up[ix], pp[ix], bp_x[ix], up_x[ix], pp_x[ix], bh[ix], uh[ix], ph[ix], bh_x[ix], uh_x[ix], ph_x[ix], b_xx[ix], b_xxx[ix], u_xx[ix], u_xxx[ix], p_xx[ix], p_xxx[ix]);
             }
             fclose(fp);
         }
