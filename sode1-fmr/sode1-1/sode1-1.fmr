@@ -5,7 +5,7 @@ double :: cfl = 0.05
 double :: h = 2.0/NX
 double :: dt = cfl*h
 double :: gm = 1.4
-double :: a = 0.5
+double :: a = 0.0
 
 d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - h*(a_x[i+1] - a_x[i-1])/4)/h/h
 d_xxx = fun(a,a_x) 15*(a[i+1] - a[i-1])/2/h/h/h - 3*(a_x[i+1] + 8*a_x[i] + a_x[i-1])/2/h/h
@@ -34,37 +34,73 @@ viscosity_tx = fun(cs,b,b_x,b_t,b_tx,u_x,u_xx,u_tx,u_txx) alpha(u_x)*cs*(u_txx/b
 
 viscosity_txx = fun(cs,b,b_x,b_xx,b_t,b_tx,b_txx,u_x,u_xx,u_xxx,u_tx,u_txx,u_txxx) alpha(u_x)*cs*(u_txxx/b - 2*u_txx*b_x/b/b - u_tx*b_xx/b/b + 2*u_tx*b_x**2/(b**3) - u_xxx*b_t/b/b - 2*u_xx*b_tx/b/b + 4*u_xx*b_t*b_x/(b**3) - u_x*b_txx/b/b + 4*u_x*b_tx/(b**3) + 2*u_x*b_t*b_xx/(b**3) - 6*u_x*b_t*b_x**2/(b**4))
 
-begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x),P,P_x)
+begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx))
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+
 b_t = ((b * u_x) - (b_x * u))
 u_t = (-((u * u_x) + (b * p_x))) - b*P_x
 p_t = (-(((gm * p) * u_x) + (u * p_x))) - gm*P*u_x - u*P_x
 end function
 
-begin function (b_tx,u_tx,p_tx) = d_tx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),P,P_x,P_xx)
+begin function (b_tx,u_tx,p_tx) = d_tx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx))
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+P_xx = viscosity_xx(cs,b,b_x,b_xx,u_x,u_xx,u_xxx)
+
 b_tx = ((b * u_xx) - (b_xx * u))
 u_tx = ((((-(b * p_xx)) - (b_x * p_x)) - (u * u_xx)) - (u_x * u_x)) - b_x*P_x - b*P_xx
 p_tx = ((((-((gm * p) * u_xx)) - ((gm * p_x) * u_x)) - (p_x * u_x)) - (p_xx * u)) + ((((-((gm * P) * u_xx)) - ((gm * P_x) * u_x)) - (P_x * u_x)) - (P_xx * u))
 end function
 
-begin function (b_txx,u_txx,p_txx) = d_txx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),P,P_x,P_xx,P_xxx)
+begin function (b_txx,u_txx,p_txx) = d_txx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),(b_xxxx,u_xxxx,p_xxxx))
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+P_xx = viscosity_xx(cs,b,b_x,b_xx,u_x,u_xx,u_xxx)
+P_xxx = viscosity_xxx(cs,b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx)
+
 b_txx = b_x*u_xx + b*u_xxx - u_x*b_xx - u*b_xxx
 u_txx = -3*u_x*u_xx - u*u_xxx - b_xx*p_x - 2*b_x*p_xx - b*p_xxx - b_xx*P_x - 2*b_x*P_xx - b*P_xxx
 p_txx = -(gm+2)*p_xx*u_x - (2*gm+1)*p_x*u_xx - gm*p*u_xxx - u*p_xxx - (gm+2)*P_xx*u_x - (2*gm+1)*P_x*u_xx - gm*P*u_xxx - u*P_xxx
 end function
 
-begin function (b_txxx,u_txxx,p_txxx) = d_txxx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),(b_xxxx,u_xxxx,p_xxxx),P,P_x,P_xx,P_xxx,P_xxxx)
+begin function (b_txxx,u_txxx,p_txxx) = d_txxx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),(b_xxxx,u_xxxx,p_xxxx),u_xxxxx)
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+P_xx = viscosity_xx(cs,b,b_x,b_xx,u_x,u_xx,u_xxx)
+P_xxx = viscosity_xxx(cs,b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx)
+P_xxxx = viscosity_xxxx(cs,b,b_x,b_xx,b_xxx,b_xxxx,u_x,u_xx,u_xxx,u_xxxx,u_xxxxx)
+
 b_txxx = -2*u_x*b_xxx - u*b_xxxx + 2*b_x*u_xxx + b*u_xxxx
 u_txxx = -3*u_xx**2 - 4*u_x*u_xxx - u*u_xxxx - b_xxx*p_x - 3*b_xx*p_xx - 3*b_x*p_xxx - b*p_xxxx - b_xxx*P_x - 3*b_xx*P_xx - 3*b_x*P_xxx - b*P_xxxx
 p_txxx = -(gm+3)*p_xxx*u_x - 3*(gm+1)*p_xx*u_xx - (3*gm+1)*p_x*u_xxx - gm*p*u_xxxx - u*p_xxxx - (gm+3)*P_xxx*u_x - 3*(gm+1)*P_xx*u_xx - (3*gm+1)*P_x*u_xxx - gm*P*u_xxxx - u*P_xxxx
 end function
 
-begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),P,P_x,P_t,P_tx)
+begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),(b_txx,u_txx,p_txx))
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+P_t = viscosity_t(cs,b,b_t,u_x,u_tx)
+P_tx = viscosity_tx(cs,b,b_x,b_t,b_tx,u_x,u_xx,u_tx,u_txx)
+
 b_tt = -u_t*b_x - u*b_tx + b_t*u_x + b*u_tx
 u_tt = -u_t*u_x - u*u_tx - b_t*p_x - b_t*p_x - b*p_tx - b_t*P_x - b*P_tx
 p_tt = -gm*p_t*u_x - gm*p*u_tx - u_t*p_x - u*p_tx -gm*P_t*u_x - gm*P*u_tx - u_t*P_x - u*P_tx
 end function
 
-begin function (b_ttx,u_ttx,p_ttx) = d_ttx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),(b_txx,u_txx,p_txx),P,P_x,P_xx,P_t,P_tx,P_txx)
+begin function (b_ttx,u_ttx,p_ttx) = d_ttx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),(b_txx,u_txx,p_txx),(b_txxx,u_txxx,p_txxx))
+cs = sound_speed(b,p)
+P = viscosity(cs,b,u_x)
+P_x = viscosity_x(cs,b,b_x,u_x,u_xx)
+P_xx = viscosity_xx(cs,b,b_x,b_xx,u_x,u_xx,u_xxx)
+P_t = viscosity_t(cs,b,b_t,u_x,u_tx)
+P_tx = viscosity_tx(cs,b,b_x,b_t,b_tx,u_x,u_xx,u_tx,u_txx)
+P_txx = viscosity_txx(cs,b,b_x,b_xx,b_t,b_tx,b_txx,u_x,u_xx,u_xxx,u_tx,u_txx,u_txxx)
+
 b_ttx = -u_t*b_xx - u*b_txx + b_t*u_xx + b*u_txx
 u_ttx = -2*u_tx*u_x - u_t*u_xx - u*u_txx - b_tx*p_x - b_t*p_xx - b_x*p_tx - b*p_txx - b_tx*P_x - b_t*P_xx - b_x*P_tx - b*P_txx
 p_ttx = -(gm+1)*p_tx*u_x - gm*p_t*u_xx - (gm+1)*p_x*u_tx - gm*p*u_txx - u_t*p_xx - u*p_txx -(gm+1)*P_tx*u_x - gm*P_t*u_xx - (gm+1)*P_x*u_tx - gm*P*u_txx - u_t*P_xx - u*P_txx
@@ -74,26 +110,22 @@ begin function init() \
   returns (b, u, p, b_x, u_x, p_x, \
            bp, up, pp, bp_x, up_x, pp_x, \
            bh, uh, ph, bh_x, uh_x, ph_x, \
-           b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx, cs, \
-           P,P_x,P_xx,P_xxx,P_xxxx,P_t,P_tx,P_txx)
+           b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx)
 
     double [] :: b = 0, u = 0, p = 0, b_x = 0, u_x = 0, p_x = 0, \
                  bp = 0, up = 0, pp = 0, bp_x = 0, up_x = 0, pp_x = 0, \
                  bh = 0, uh = 0, ph = 0, bh_x = 0, uh_x = 0, ph_x = 0, \
-                 b_xx = 0, b_xxx = 0, u_xx = 0, u_xxx = 0, p_xx = 0, p_xxx = 0, cs = 0, \
-                 P = 0, P_x = 0, P_xx = 0, P_xxx = 0, P_xxxx = 0, P_t = 0, P_tx = 0,P_txx = 0
+                 b_xx = 0, b_xxx = 0, u_xx = 0, u_xxx = 0, p_xx = 0, p_xxx = 0
 end function
 
 begin function step(b, u, p, b_x, u_x, p_x, \
                     bp, up, pp, bp_x, up_x, pp_x, \
                     bh, uh, ph, bh_x, uh_x, ph_x, \
-                    b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx, cs, \
-                    P0,P_x0,P_xx0,P_xxx0,P_xxxx0,P_t0,P_tx0,P_txx0) \
+                    b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx) \
   returns (b', u', p', b_x', u_x', p_x', \
            bp', up', pp', bp_x', up_x', pp_x', \
            bh', uh', ph', bh_x', uh_x', ph_x', \
-           b_xx', b_xxx', u_xx', u_xxx', p_xx', p_xxx', cs', \
-           P,P_x,P_xx,P_xxx,P_xxxx,P_t,P_tx,P_txx)
+           b_xx', b_xxx', u_xx', u_xxx', p_xx', p_xxx')
 
     q = (b,u,p)
     q_x = (b_x,u_x,p_x)
@@ -117,29 +149,13 @@ begin function step(b, u, p, b_x, u_x, p_x, \
     q_xxx = (b_xxx',u_xxx',p_xxx')
     q_xxxx = (b_xxxx',u_xxxx',p_xxxx')
     
-    cs' = sound_speed(bp,pp)
+    q_t = d_t(qp,qp_x,q_xx)
+    q_tx = d_tx(qp,qp_x,q_xx,q_xxx)
+    q_txx = d_txx(qp,qp_x,q_xx,q_xxx,q_xxxx)
+    q_txxx = d_txxx(qp,qp_x,q_xx,q_xxx,q_xxxx,u_xxxxx')
 
-    P = viscosity(cs',bp,up_x)
-    P_x = viscosity_x(cs',bp,bp_x,up_x,u_xx')
-    P_xx = viscosity_xx(cs',bp,bp_x,b_xx',up_x,u_xx',u_xxx')
-    P_xxx = viscosity_xxx(cs',bp,bp_x,b_xx',b_xxx',up_x,u_xx',u_xxx',u_xxxx')
-    P_xxxx = viscosity_xxxx(cs',bp,bp_x,b_xx',b_xxx',b_xxxx',up_x,u_xx',u_xxx',u_xxxx',u_xxxxx')
-
-    q_t = d_t(qp,qp_x,P,P_x)
-    (b_t,u_t,p_t) = q_t
-    q_tx = d_tx(qp,qp_x,q_xx,P,P_x,P_xx)
-    (b_tx,u_tx,p_tx) = q_tx
-    q_txx = d_txx(qp,qp_x,q_xx,q_xxx,P,P_x,P_xx,P_xxx)
-    (b_txx,u_txx,p_txx) = q_txx
-    q_txxx = d_txxx(qp,qp_x,q_xx,q_xxx,q_xxxx,P,P_x,P_xx,P_xxx,P_xxxx)
-    (b_txxx,u_txxx,p_txxx) = q_txxx
-
-    P_t = viscosity_t(cs',bp,b_t,up_x,u_tx)
-    P_tx = viscosity_tx(cs',bp,bp_x,b_t,b_tx,up_x,u_xx',u_tx,u_txx)
-    P_txx = viscosity_txx(cs',bp,bp_x,b_xx',b_t,b_tx,b_txx,up_x,u_xx',u_xxx',u_tx,u_txx,u_txxx)
-
-    q_tt = d_tt(qp,qp_x,q_t,q_tx,P,P_x,P_t,P_tx)
-    q_ttx = d_ttx(qp,qp_x,q_xx,q_t,q_tx,q_txx,P,P_x,P_xx,P_t,P_tx,P_txx)
+    q_tt = d_tt(qp,qp_x,q_xx,q_t,q_tx,q_txx)
+    q_ttx = d_ttx(qp,qp_x,q_xx,q_xxx,q_t,q_tx,q_txx,q_txxx)
 
     q' = qh + dt*q_t/2 - dt*dt*q_tt/12
     q_x' = qh_x + dt*q_tx/2 - dt*dt*q_ttx/12

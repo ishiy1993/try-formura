@@ -190,7 +190,6 @@ void init(double dx, double dt, Formura_Navigator &navi) {
     b_xxx[ix] = dens_xxx(x);
     u_xxx[ix] = velcX_xxx(x);
     p_xxx[ix] = pres_xxx(x);
-    cs[ix] = sqrt(gm*bp[ix]*pp[ix]);
   }
 }
 
@@ -201,7 +200,7 @@ int main(int argc, char **argv) {
   Formura_Init(&navi, MPI_COMM_WORLD);
 
   double cfl = 0.05;
-  double a = 0.5;
+  double a = 0.0;
   double dx = (xr-xl)/NX;
   double dt = cfl*dx;
   int NT = 1.1/dt;
@@ -223,7 +222,7 @@ int main(int argc, char **argv) {
       for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
         double t = navi.time_step * dt;
         double x = (ix + navi.offset_x)*dx;
-        fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", x, b[ix], 1.0/b[ix], u[ix], p[ix], b_x[ix], u_x[ix], p_x[ix], bp[ix], up[ix], pp[ix], bp_x[ix], up_x[ix], pp_x[ix], bh[ix], uh[ix], ph[ix], bh_x[ix], uh_x[ix], ph_x[ix], b_xx[ix], b_xxx[ix], u_xx[ix], u_xxx[ix], p_xx[ix], p_xxx[ix], cs[ix]);
+        fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", x, b[ix], 1.0/b[ix], u[ix], p[ix], b_x[ix], u_x[ix], p_x[ix], bp[ix], up[ix], pp[ix], bp_x[ix], up_x[ix], pp_x[ix], bh[ix], uh[ix], ph[ix], bh_x[ix], uh_x[ix], ph_x[ix], b_xx[ix], b_xxx[ix], u_xx[ix], u_xxx[ix], p_xx[ix], p_xxx[ix]);
       }
       fclose(fp);
     }
