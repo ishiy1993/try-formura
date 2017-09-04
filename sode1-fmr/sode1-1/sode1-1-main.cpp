@@ -4,8 +4,10 @@
 #include "sode1-1.h"
 
 #define problem "shocktube"
-double x0 = 50.0; // the center of range
-double d = 0.5; // the half length of smoothing region
+double xl = 0.0;
+double xr = 2.0;
+double x0 = (xl+xr)/2.0; // the center of range
+double d = 0.05; // the half length of smoothing region
 double bL = 1.0/1.0;
 double bR = 1.0/0.125;
 double uL = 0.0;
@@ -201,7 +203,7 @@ int main(int argc, char **argv) {
   double s = 0.0;
   double a = 0.0;
   double aa = (1.4+1)*a/2;
-  double dx = 100.0/NX;
+  double dx = (xr-xl)/NX;
   double dt = cfl*dx;
   int NT = 1.1/dt;
   init(dx, dt, navi);
