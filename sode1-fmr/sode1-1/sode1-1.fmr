@@ -2,69 +2,98 @@ dimension :: 1
 axes :: x
 
 double :: cfl = 0.05
-double :: h = 100/NX
+double :: h = 2.0/NX
 double :: dt = cfl*h
 double :: gm = 1.4
+double :: a = 0.5
 
 d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - h*(a_x[i+1] - a_x[i-1])/4)/h/h
-d_xxx = fun(a,a_x) (a_x[i+1] + a_x[i-1] - 2*a_x[i])/h/h
+d_xxx = fun(a,a_x) 15*(a[i+1] - a[i-1])/2/h/h/h - 3*(a_x[i+1] + 8*a_x[i] + a_x[i-1])/2/h/h
+d_xxxx = fun(a,a_x) -12*(a[i+1] - 2*a[i] + a[i-1])/h/h/h/h + 6*(a_x[i+1] - a_x[i-1])/h/h/h
+d_xxxxx = fun(a,a_x) -90*(a[i+1]-a[i-1])/h/h/h/h/h + 30*(a_x[i+1] + 4*a_x[i] + a_x[i-1])/h/h/h/h
 
-begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x))
+sound_speed = fun(b,p) (gm*b*p)**(1/2)
+
+min2 = fun(a1,a2) if a1 < a2 then a1 else a2
+min = fun(a1,a2,a3) min2(a1,min2(a2,a3))
+alpha = fun(u_x) if min(u_x[i],u_x[i-1],u_x[i+1]) < 0 then a else 0.0
+
+viscosity = fun(cs,b,u_x) alpha(u_x)*cs*u_x/b
+
+viscosity_x = fun(cs,b,b_x,u_x,u_xx) alpha(u_x)*cs*(u_xx/b - u_x*b_x/b/b)
+
+viscosity_xx = fun(cs,b,b_x,b_xx,u_x,u_xx,u_xxx) alpha(u_x)*cs*(u_xxx/b - 2*u_xx*b_x/b/b - u_x*b_xx/b/b + 2*u_x*b_x*b_x/b/b/b)
+
+viscosity_xxx = fun(cs,b,b_x,b_xx,b_xxx,u_x,u_xx,u_xxx,u_xxxx) alpha(u_x)*cs*(u_xxxx/b - 3*u_xxx*b_x/b/b - 3*u_xx*b_xx/b/b + 6*u_xx*b_x*b_x/b/b/b - u_x*b_xxx/b/b + 6*u_x*b_x*b_xx/b/b/b - 6*u_x*b_x**3/b/b/b/b)
+
+viscosity_xxxx = fun(cs,b,b_x,b_xx,b_xxx,b_xxxx,u_x,u_xx,u_xxx,u_xxxx,u_xxxxx) alpha(u_x)*cs*(u_xxxxx/b - 4*u_xxxx*b_x/b/b - 6*u_xxx*b_xx/b/b + 12*u_xxx*b_x**2/b/b/b - 4*u_xx*b_xxx/b/b + 24*u_xx*b_x*b_xx/b/b/b - 24*u_xx*b_x**3/(b**4) - u_x*b_xxxx/b/b + 8*u_x*b_x*b_xxx/(b**3) + 6*u_x*b_xx**2/(b**3) - 36*u_x*b_x**2*b_xx/(b**4) + 24*u_x*b_x**4/(b**5))
+
+viscosity_t = fun(cs,b,b_t,u_x,u_tx) alpha(u_x)*cs*(u_tx/b - u_x*b_t/b/b)
+
+viscosity_tx = fun(cs,b,b_x,b_t,b_tx,u_x,u_xx,u_tx,u_txx) alpha(u_x)*cs*(u_txx/b - u_tx*b_x/b/b - u_xx*b_t/b/b - u_x*b_tx/b/b + 2*u_x*b_t*b_x/b/b/b)
+
+viscosity_txx = fun(cs,b,b_x,b_xx,b_t,b_tx,b_txx,u_x,u_xx,u_xxx,u_tx,u_txx,u_txxx) alpha(u_x)*cs*(u_txxx/b - 2*u_txx*b_x/b/b - u_tx*b_xx/b/b + 2*u_tx*b_x**2/(b**3) - u_xxx*b_t/b/b - 2*u_xx*b_tx/b/b + 4*u_xx*b_t*b_x/(b**3) - u_x*b_txx/b/b + 4*u_x*b_tx/(b**3) + 2*u_x*b_t*b_xx/(b**3) - 6*u_x*b_t*b_x**2/(b**4))
+
+begin function (b_t,u_t,p_t) = d_t((b,u,p),(b_x,u_x,p_x),P,P_x)
 b_t = ((b * u_x) - (b_x * u))
-u_t = (-((u * u_x) + (b * p_x)))
-p_t = (-(((gm * p) * u_x) + (u * p_x)))
+u_t = (-((u * u_x) + (b * p_x))) - b*P_x
+p_t = (-(((gm * p) * u_x) + (u * p_x))) - gm*P*u_x - u*P_x
 end function
 
-begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x))
-b_xx = d_xx(b,b_x)
-u_xx = d_xx(u,u_x)
-p_xx = d_xx(p,p_x)
-b_tt = (((-(2.0 * ((b * u) * u_xx))) - ((b * b) * p_xx)) + ((b_xx * u) * u))
-u_tt = (((((((((b * gm) * p) * u_xx) + (((b * gm) * p_x) * u_x)) + ((b * p_x) * u_x)) + (2.0 * ((b * p_xx) * u))) + (2.0 * ((b_x * p_x) * u))) + (2.0 * ((u * u_x) * u_x))) + ((u * u) * u_xx))
-p_tt = (((((((((((b * gm) * p) * p_xx) + ((b * p_x) * p_x)) + (((b_x * gm) * p) * p_x)) + (2.0 * (((gm * p) * u) * u_xx))) + (((gm * p) * u_x) * u_x)) + (2.0 * (((gm * p_x) * u) * u_x))) + ((((gm * gm) * p) * u_x) * u_x)) + (2.0 * ((p_x * u) * u_x))) + ((p_xx * u) * u))
-end function
-
-begin function (b_tx,u_tx,p_tx) = d_tx((b,u,p),(b_x,u_x,p_x))
-b_xx = d_xx(b,b_x)
-u_xx = d_xx(u,u_x)
-p_xx = d_xx(p,p_x)
+begin function (b_tx,u_tx,p_tx) = d_tx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),P,P_x,P_xx)
 b_tx = ((b * u_xx) - (b_xx * u))
-u_tx = ((((-(b * p_xx)) - (b_x * p_x)) - (u * u_xx)) - (u_x * u_x))
-p_tx = ((((-((gm * p) * u_xx)) - ((gm * p_x) * u_x)) - (p_x * u_x)) - (p_xx * u))
+u_tx = ((((-(b * p_xx)) - (b_x * p_x)) - (u * u_xx)) - (u_x * u_x)) - b_x*P_x - b*P_xx
+p_tx = ((((-((gm * p) * u_xx)) - ((gm * p_x) * u_x)) - (p_x * u_x)) - (p_xx * u)) + ((((-((gm * P) * u_xx)) - ((gm * P_x) * u_x)) - (P_x * u_x)) - (P_xx * u))
 end function
 
-begin function (b_ttx,u_ttx,p_ttx) = d_ttx((b,u,p),(b_x,u_x,p_x))
-b_xx = d_xx(b,b_x)
-b_xxx = d_xxx(b,b_x)
-u_xx = d_xx(u,u_x)
-u_xxx = d_xxx(u,u_x)
-p_xx = d_xx(p,p_x)
-p_xxx = d_xxx(p,p_x)
-b_ttx = (((((((-(2.0 * ((b * b_x) * p_xx))) - (2.0 * ((b * u) * u_xxx))) - (2.0 * ((b * u_x) * u_xx))) - ((b * b) * p_xxx)) - (2.0 * ((b_x * u) * u_xx))) + (2.0 * ((b_xx * u) * u_x))) + ((b_xxx * u) * u))
-u_ttx = ((((((((((((((((b * gm) * p) * u_xxx) + (2.0 * (((b * gm) * p_x) * u_xx))) + (((b * gm) * p_xx) * u_x)) + ((b * p_x) * u_xx)) + (3.0 * ((b * p_xx) * u_x))) + (2.0 * ((b * p_xxx) * u))) + (((b_x * gm) * p) * u_xx)) + (((b_x * gm) * p_x) * u_x)) + (3.0 * ((b_x * p_x) * u_x))) + (4.0 * ((b_x * p_xx) * u))) + (2.0 * ((b_xx * p_x) * u))) + (6.0 * ((u * u_x) * u_xx))) + ((u * u) * u_xxx)) + (2.0 * ((u_x * u_x) * u_x)))
-p_ttx = ((((((((((((((((((((b * gm) * p) * p_xxx) + (((b * gm) * p_x) * p_xx)) + (2.0 * ((b * p_x) * p_xx))) + (2.0 * (((b_x * gm) * p) * p_xx))) + (((b_x * gm) * p_x) * p_x)) + ((b_x * p_x) * p_x)) + (((b_xx * gm) * p) * p_x)) + (2.0 * (((gm * p) * u) * u_xxx))) + (4.0 * (((gm * p) * u_x) * u_xx))) + (4.0 * (((gm * p_x) * u) * u_xx))) + (3.0 * (((gm * p_x) * u_x) * u_x))) + (2.0 * (((gm * p_xx) * u) * u_x))) + (2.0 * ((((gm * gm) * p) * u_x) * u_xx))) + ((((gm * gm) * p_x) * u_x) * u_x)) + (2.0 * ((p_x * u) * u_xx))) + (2.0 * ((p_x * u_x) * u_x))) + (4.0 * ((p_xx * u) * u_x))) + ((p_xxx * u) * u))
+begin function (b_txx,u_txx,p_txx) = d_txx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),P,P_x,P_xx,P_xxx)
+b_txx = b_x*u_xx + b*u_xxx - u_x*b_xx - u*b_xxx
+u_txx = -3*u_x*u_xx - u*u_xxx - b_xx*p_x - 2*b_x*p_xx - b*p_xxx - b_xx*P_x - 2*b_x*P_xx - b*P_xxx
+p_txx = -(gm+2)*p_xx*u_x - (2*gm+1)*p_x*u_xx - gm*p*u_xxx - u*p_xxx - (gm+2)*P_xx*u_x - (2*gm+1)*P_x*u_xx - gm*P*u_xxx - u*P_xxx
+end function
+
+begin function (b_txxx,u_txxx,p_txxx) = d_txxx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_xxx,u_xxx,p_xxx),(b_xxxx,u_xxxx,p_xxxx),P,P_x,P_xx,P_xxx,P_xxxx)
+b_txxx = -2*u_x*b_xxx - u*b_xxxx + 2*b_x*u_xxx + b*u_xxxx
+u_txxx = -3*u_xx**2 - 4*u_x*u_xxx - u*u_xxxx - b_xxx*p_x - 3*b_xx*p_xx - 3*b_x*p_xxx - b*p_xxxx - b_xxx*P_x - 3*b_xx*P_xx - 3*b_x*P_xxx - b*P_xxxx
+p_txxx = -(gm+3)*p_xxx*u_x - 3*(gm+1)*p_xx*u_xx - (3*gm+1)*p_x*u_xxx - gm*p*u_xxxx - u*p_xxxx - (gm+3)*P_xxx*u_x - 3*(gm+1)*P_xx*u_xx - (3*gm+1)*P_x*u_xxx - gm*P*u_xxxx - u*P_xxxx
+end function
+
+begin function (b_tt,u_tt,p_tt) = d_tt((b,u,p),(b_x,u_x,p_x),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),P,P_x,P_t,P_tx)
+b_tt = -u_t*b_x - u*b_tx + b_t*u_x + b*u_tx
+u_tt = -u_t*u_x - u*u_tx - b_t*p_x - b_t*p_x - b*p_tx - b_t*P_x - b*P_tx
+p_tt = -gm*p_t*u_x - gm*p*u_tx - u_t*p_x - u*p_tx -gm*P_t*u_x - gm*P*u_tx - u_t*P_x - u*P_tx
+end function
+
+begin function (b_ttx,u_ttx,p_ttx) = d_ttx((b,u,p),(b_x,u_x,p_x),(b_xx,u_xx,p_xx),(b_t,u_t,p_t),(b_tx,u_tx,p_tx),(b_txx,u_txx,p_txx),P,P_x,P_xx,P_t,P_tx,P_txx)
+b_ttx = -u_t*b_xx - u*b_txx + b_t*u_xx + b*u_txx
+u_ttx = -2*u_tx*u_x - u_t*u_xx - u*u_txx - b_tx*p_x - b_t*p_xx - b_x*p_tx - b*p_txx - b_tx*P_x - b_t*P_xx - b_x*P_tx - b*P_txx
+p_ttx = -(gm+1)*p_tx*u_x - gm*p_t*u_xx - (gm+1)*p_x*u_tx - gm*p*u_txx - u_t*p_xx - u*p_txx -(gm+1)*P_tx*u_x - gm*P_t*u_xx - (gm+1)*P_x*u_tx - gm*P*u_txx - u_t*P_xx - u*P_txx
 end function
 
 begin function init() \
   returns (b, u, p, b_x, u_x, p_x, \
            bp, up, pp, bp_x, up_x, pp_x, \
            bh, uh, ph, bh_x, uh_x, ph_x, \
-           b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx)
+           b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx, cs, \
+           P,P_x,P_xx,P_xxx,P_xxxx,P_t,P_tx,P_txx)
 
     double [] :: b = 0, u = 0, p = 0, b_x = 0, u_x = 0, p_x = 0, \
                  bp = 0, up = 0, pp = 0, bp_x = 0, up_x = 0, pp_x = 0, \
                  bh = 0, uh = 0, ph = 0, bh_x = 0, uh_x = 0, ph_x = 0, \
-                 b_xx = 0, b_xxx = 0, u_xx = 0, u_xxx = 0, p_xx = 0, p_xxx = 0
+                 b_xx = 0, b_xxx = 0, u_xx = 0, u_xxx = 0, p_xx = 0, p_xxx = 0, cs = 0, \
+                 P = 0, P_x = 0, P_xx = 0, P_xxx = 0, P_xxxx = 0, P_t = 0, P_tx = 0,P_txx = 0
 end function
 
 begin function step(b, u, p, b_x, u_x, p_x, \
                     bp, up, pp, bp_x, up_x, pp_x, \
                     bh, uh, ph, bh_x, uh_x, ph_x, \
-                    b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx) \
+                    b_xx, b_xxx, u_xx, u_xxx, p_xx, p_xxx, cs, \
+                    P0,P_x0,P_xx0,P_xxx0,P_xxxx0,P_t0,P_tx0,P_txx0) \
   returns (b', u', p', b_x', u_x', p_x', \
            bp', up', pp', bp_x', up_x', pp_x', \
            bh', uh', ph', bh_x', uh_x', ph_x', \
-           b_xx', b_xxx', u_xx', u_xxx', p_xx', p_xxx')
+           b_xx', b_xxx', u_xx', u_xxx', p_xx', p_xxx', cs', \
+           P,P_x,P_xx,P_xxx,P_xxxx,P_t,P_tx,P_txx)
 
     q = (b,u,p)
     q_x = (b_x,u_x,p_x)
@@ -73,30 +102,56 @@ begin function step(b, u, p, b_x, u_x, p_x, \
     qh = (bh,uh,ph)
     qh_x = (bh_x,uh_x,ph_x)
 
-    q_t = d_t(qp,qp_x)
-    q_tt = d_tt(qp,qp_x)
-    q_tx = d_tx(qp,qp_x)
-    q_ttx = d_ttx(qp,qp_x)
-
     b_xx' = d_xx(bp,bp_x)
     b_xxx' = d_xxx(bp,bp_x)
+    b_xxxx' = d_xxxx(bp,bp_x)
     u_xx' = d_xx(up,up_x)
     u_xxx' = d_xxx(up,up_x)
+    u_xxxx' = d_xxxx(up,up_x)
+    u_xxxxx' = d_xxxxx(up,up_x)
     p_xx' = d_xx(pp,pp_x)
     p_xxx' = d_xxx(pp,pp_x)
+    p_xxxx' = d_xxxx(pp,pp_x)
+
+    q_xx = (b_xx',u_xx',p_xx')
+    q_xxx = (b_xxx',u_xxx',p_xxx')
+    q_xxxx = (b_xxxx',u_xxxx',p_xxxx')
+    
+    cs' = sound_speed(bp,pp)
+
+    P = viscosity(cs',bp,up_x)
+    P_x = viscosity_x(cs',bp,bp_x,up_x,u_xx')
+    P_xx = viscosity_xx(cs',bp,bp_x,b_xx',up_x,u_xx',u_xxx')
+    P_xxx = viscosity_xxx(cs',bp,bp_x,b_xx',b_xxx',up_x,u_xx',u_xxx',u_xxxx')
+    P_xxxx = viscosity_xxxx(cs',bp,bp_x,b_xx',b_xxx',b_xxxx',up_x,u_xx',u_xxx',u_xxxx',u_xxxxx')
+
+    q_t = d_t(qp,qp_x,P,P_x)
+    (b_t,u_t,p_t) = q_t
+    q_tx = d_tx(qp,qp_x,q_xx,P,P_x,P_xx)
+    (b_tx,u_tx,p_tx) = q_tx
+    q_txx = d_txx(qp,qp_x,q_xx,q_xxx,P,P_x,P_xx,P_xxx)
+    (b_txx,u_txx,p_txx) = q_txx
+    q_txxx = d_txxx(qp,qp_x,q_xx,q_xxx,q_xxxx,P,P_x,P_xx,P_xxx,P_xxxx)
+    (b_txxx,u_txxx,p_txxx) = q_txxx
+
+    P_t = viscosity_t(cs',bp,b_t,up_x,u_tx)
+    P_tx = viscosity_tx(cs',bp,bp_x,b_t,b_tx,up_x,u_xx',u_tx,u_txx)
+    P_txx = viscosity_txx(cs',bp,bp_x,b_xx',b_t,b_tx,b_txx,up_x,u_xx',u_xxx',u_tx,u_txx,u_txxx)
+
+    q_tt = d_tt(qp,qp_x,q_t,q_tx,P,P_x,P_t,P_tx)
+    q_ttx = d_ttx(qp,qp_x,q_xx,q_t,q_tx,q_txx,P,P_x,P_xx,P_t,P_tx,P_txx)
 
     q' = qh + dt*q_t/2 - dt*dt*q_tt/12
-    (b',u',p') = q'
     q_x' = qh_x + dt*q_tx/2 - dt*dt*q_ttx/12
-    (b_x',u_x',p_x') = q_x'
-
     qp' = q' + dt*q_t + dt*dt*q_tt/2
-    (bp',up',pp') = qp'
     qp_x' = q_x' + dt*q_tx + dt*dt*q_ttx/2
-    (bp_x',up_x',pp_x') = qp_x'
-
     qh' = q' + dt*q_t/2 + dt*dt*q_tt/12
-    (bh',uh',ph') = qh'
     qh_x' = q_x' + dt*q_tx/2 + dt*dt*q_ttx/12
+
+    (b',u',p') = q'
+    (b_x',u_x',p_x') = q_x'
+    (bp',up',pp') = qp'
+    (bp_x',up_x',pp_x') = qp_x'
+    (bh',uh',ph') = qh'
     (bh_x',uh_x',ph_x') = qh_x'
 end function

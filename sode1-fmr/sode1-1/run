@@ -9,9 +9,9 @@ echo ${vis}
 echo ${n}
 
 sed -i -E "s/(TARGET :=).*/\1 ${TARGET}/" Makefile
-sed -i -E "s/(double :: vis = ).*/\1${vis}/" ${TARGET}.fmr
+sed -i -E "s/(double :: a = ).*/\1${vis}/" ${TARGET}.fmr
 sed -i -E "s/(double a = ).*/\1${vis};/" ${TARGET}-main.cpp
-grep 'double :: vis' ${TARGET}.fmr
+grep 'double :: a' ${TARGET}.fmr
 grep 'double a' ${TARGET}-main.cpp
 
 echo $(date +"%F %T") $(grep "intra" ${TARGET}.yaml)
