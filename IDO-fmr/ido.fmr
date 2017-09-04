@@ -1,0 +1,189 @@
+dimension :: 1
+axes :: x
+
+double :: cfl = 0.05
+double :: h = 2.0/NX
+double :: dt = cfl*h
+double :: gm = 1.4
+double :: a = 0.0
+
+d_xx = fun(a,a_x) 2*(a[i+1] + a[i-1] - 2*a[i] - h*(a_x[i+1] - a_x[i-1])/4)/h/h
+d_xxx = fun(a,a_x) 15*(a[i+1] - a[i-1])/2/h/h/h - 3*(a_x[i+1] + 8*a_x[i] + a_x[i-1])/2/h/h
+d_xxxx = fun(a,a_x) -12*(a[i+1] - 2*a[i] + a[i-1])/h/h/h/h + 6*(a_x[i+1] - a_x[i-1])/h/h/h
+d_xxxxx = fun(a,a_x) -90*(a[i+1]-a[i-1])/h/h/h/h/h + 30*(a_x[i+1] + 4*a_x[i] + a_x[i-1])/h/h/h/h
+
+d_xx' = fun(u,a,a_x) if u[i] > 0 then 2*(0*a_x[i+1]+2*a_x[i]+a_x[i-1])/h - 6*(0*a[i+1]+a[i]-a[i-1])/h/h else -2*(0*a_x[i-1]+a_x[i]+a_x[i+1])/h-6*(0*a[i-1]+a[i]-a[i+1])/h/h
+d_xxx' = fun(u,a,a_x) if u[i] > 0 then 6*(0*a_x[i+1]+a_x[i]+a_x[i-1])/h/h - 12*(0*a[i+1]+a[i]-a[i-1])/h/h/h else 6*(0*a_x[i-1]+a_x[i]+a_x[i+1])/h/h + 12*(0*a[i-1]+a[i]-a[i+1])/h/h/h
+
+sound_speed = fun(r,p) (gm*p/r)**(1/2)
+
+min2 = fun(a1,a2) if a1 < a2 then a1 else a2
+min = fun(a1,a2,a3) min2(a1,min2(a2,a3))
+alpha = fun(u_x) if min(u_x[i],u_x[i-1],u_x[i+1]) < 0 then a else 0.0
+
+pres = fun(r,e) (gm-1)*r*e
+pres_x = fun(r,e,r_x,e_x) (gm-1)*(r_x*e + r*e_x)
+pres_xx = fun(r,r_x,r_xx,e_x,e_xx) (gm-1)*(r_xx + 2*r_x*e_x + r*e_xx)
+pres_xxx = fun(r,r_x,r_xx,r_xxx,e,e_x,e_xx,e_xxx) (gm-1)*(r_xxx*e + 3*r_xx*e_x + 3*r_x*e_xx + r*e_xxx)
+pres_xxxx = fun(r,r_x,r_xx,r_xxx,r_xxxx,e,e_x,e_xx,e_xxx,e_xxxx) (gm-1)*(r_xxxx*e + 4*r_xxx*e_x + 6*r_xx*e_xx + 4*r_x*e_xxx + r*e_xxxx)
+pres_t = fun(r,e,r_t,e_t) (gm-1)*(r_t*e + r*e_t)
+pres_tx = fun(r,r_t,r_x,r_tx,e,e_t,e_x,e_tx) (gm-1)*(r_tx*e + r_x*e_t + r_t*e_x + r*e_tx)
+pres_txx = fun(r,r_t,r_x,r_tx,r_xx,r_txx,e,e_t,e_x,e_tx,e_xx,e_txx) (gm-1)*(r_txx*e + r_xx*e_t + 2*r_tx*e_x + 2*r_x*e_tx + r_t*e_xx + r*e_txx)
+
+visc = fun(cs,r,u_x) alpha(u_x)*cs*u_x/r
+vis_x = fun(cs,r,r_x,u_x,u_xx) alpha(u_x)*cs*(r_x*u_x + r*u_xx)
+visc_xx = fun(cs,r,r_x,r_xx,u_x,u_xx,u_xxx) alpha(u_x)*cs*(r_xx*u_x + 2*r_x*u_xx + r*u_xxx)
+visc_xxx = fun(cs,r,r_x,r_xx,r_xxx,u_x,u_xx,u_xxx,u_xxxx) alpha(u_x)*cs*(r_xxx*u_x + 3*r_xx*u_xx + 3*r_x*u_xxx + r*u_xxxx)
+visc_xxxx = fun(cs,r,r_x,r_xx,r_xxx,r_xxxx,u_x,u_xx,u_xxx,u_xxxx,u_xxxxx) alpha(u_x)*cs*(r_xxxx*u_x + 4*r_xxx*u_xx + 6*r_xx*u_xx + 4*r_x*u_xxxx + r*u_xxxxx)
+visc_t = fun(cs,r,r_t,u_x,u_xx) alpha(u_x)*cs*(r_t*u_x + r*u_xx)
+visc_tx = fun(cs,r,r_t,r_x,r_tx,u_x,u_tx,u_xx,u_txx) alpha(u_x)*cs*(r_tx*u_x + r_x*u_tx + r_t*u_xx + r*u_txx)
+visc_txx = fun(cs,r,r_t,r_x,r_tx,r_xx,r_txx,u_x,u_tx,u_xx,u_txx,u_xxx,u_txxx) alpha(u_x)*cs*(r_txx*u_x + r_xx*u_tx + 2*r_tx*u_xx + 2*r_x*u_txx + r_t*u_xxx + r*u_txxx)
+
+velc_txxx = fun(r,r_x,r_xx,r_xxx,u,u_x,u_xx,u_xxx,u_xxxx,p_x,p_xx,p_xxx,p_xxxx,P_x,P_xx,P_xxx,P_xxxx) -3*u_xx**2 - 4*u_x*u_xxx - u*u_xxxx - (p_xxxx + P_xxxx)/r + 3*(p_xxx + P_xxx)*r_x/r/r + 3*(p_xx + P_xx)*r_xx/r/r - 6*(p_xx + P_xx)*r_x**2/(r**3) + (p_x + P_x)*r_xxx/r/r - 6*(p_x + P_x)*r_x*r_xx/(r**3) + 6*(p_x + P_x)*r_x**3/(r**4)
+
+begin function (r_t,u_t,e_t) = d_t((r,u,e),(r_x,u_x,e_x),(r_xx,u_xx,e_xx))
+p = pres(r,e)
+p_x = pres_x(r,e,r_x,e_x)
+cs = sound_speed(r,p)
+P = visc(cs,r,u_x)
+P_x = vis_x(cs,r,r_x,u_x,u_xx)
+
+r_t = -r_x*u - r*u_x
+u_t = -u*u_x - (p_x + P_x)/r
+e_t = -u*e_x - (p + P)*u_x/r
+end function
+
+begin function (r_tx,u_tx,e_tx) = d_tx((r,u,e),(r_x,u_x,e_x),(r_xx,u_xx,e_xx),(r_xxx,u_xxx,e_xxx))
+p = pres(r,e)
+p_x = pres_x(r,e,r_x,e_x)
+p_xx = pres_xx(r,r_x,r_xx,e_x,e_xx)
+cs = sound_speed(r,p)
+P = visc(cs,r,u_x)
+P_x = vis_x(cs,r,r_x,u_x,u_xx)
+P_xx = visc_xx(cs,r,r_x,r_xx,u_x,u_xx,u_xxx)
+
+r_xx' = d_xx'(u,r,r_x)
+u_xx' = d_xx'(u,u,u_x)
+e_xx' = d_xx'(u,e,e_x)
+
+r_tx = -r_xx'*u - 2*r_x*u_x - r*u_xx'
+u_tx = -u_x*u_x - u*u_xx' - (p_xx + P_xx)/r + (p_x + P_x)*r_x/r/r
+e_tx = -u_x*e_x - u*e_xx' - (p_x + P_x)*u_x/r - (p + P)*u_xx/r + (p + P)*u_x*r_x/r/r
+end function
+
+begin function (r_txx,u_txx,e_txx) = d_txx((r,u,e),(r_x,u_x,e_x),(r_xx,u_xx,e_xx),(r_xxx,u_xxx,e_xxx),(r_xxxx,u_xxxx,e_xxxx))
+p = pres(r,e)
+p_x = pres_x(r,e,r_x,e_x)
+p_xx = pres_xx(r,r_x,r_xx,e_x,e_xx)
+p_xxx = pres_xxx(r,r_x,r_xx,r_xxx,e,e_x,e_xx,e_xxx)
+cs = sound_speed(r,p)
+P = visc(cs,r,u_x)
+P_x = vis_x(cs,r,r_x,u_x,u_xx)
+P_xx = visc_xx(cs,r,r_x,r_xx,u_x,u_xx,u_xxx)
+P_xxx = visc_xxx(cs,r,r_x,r_xx,r_xxx,u_x,u_xx,u_xxx,u_xxxx)
+
+r_xx' = d_xx'(u,r,r_x)
+u_xx' = d_xx'(u,u,u_x)
+e_xx' = d_xx'(u,e,e_x)
+r_xxx' = d_xxx'(u,r,r_x)
+u_xxx' = d_xxx'(u,u,u_x)
+e_xxx' = d_xxx'(u,e,e_x)
+
+r_txx = -r_xxx'*u - 3*r_xx'*u_x - 3*r_x*u_xx' - r*u_xxx'
+u_txx = -3*u_x*u_xx' - u*u_xxx' - (p_xxx + P_xxx)/r + 2*(p_xx + P_xx)*r_x/r/r + (p_x + P_x)*r_xx'/r/r - 2*(p_x + P_x)*r_x*r_x/r/r/r
+e_txx = -u_xx'*e_x - 2*u_x*e_xx' - u*e_xxx' - (p_xx + P_xx)*u_x/r - 2*(p_x + P_x)*u_xx/r + 2*(p_x + P_x)*u_x*r_x/r/r - (p + P)*u_xxx/r + 2*(p + P)*u_xx*r_x/r/r + (p + P)*u_x*r_xx/r/r + (p + P)*u_x*r_x*r_x/r/r/r
+end function
+
+begin function (r_tt,u_tt,e_tt) = d_tt((r,u,e),(r_x,u_x,e_x),(r_xx,u_xx,e_xx),(r_t,u_t,e_t),(r_tx,u_tx,e_tx),(r_txx,u_txx,r_txx))
+p = pres(r,e)
+p_x = pres_x(r,e,r_x,e_x)
+p_t = pres_t(r,e,r_t,e_t)
+p_tx = pres_tx(r,r_t,r_x,r_tx,e,e_t,e_x,e_tx)
+cs = sound_speed(r,p)
+P = visc(cs,r,u_x)
+P_x = vis_x(cs,r,r_x,u_x,u_xx)
+P_t = visc_t(cs,r,r_t,u_x,u_xx)
+P_tx = visc_tx(cs,r,r_t,r_x,r_tx,u_x,u_tx,u_xx,u_txx)
+
+r_tt = -r_tx*u - r_x*u_t - r_t*u_x - r*u_tx
+u_tt = -u_t*u_x - u*u_tx - (p_tx + P_tx)/r + (p_x + P_x)*r_t/r/r
+e_tt = -u_t*e_x - u*e_tx - (p_t + P_t)*u_x/r - (p + P)*u_tx/r + (p + P)*u_x*r_t/r/r
+end function
+
+begin function (r_ttx,u_ttx,e_ttx) = d_ttx((r,u,e),(r_x,u_x,e_x),(r_xx,u_xx,e_xx),(r_xxx,u_xxx,e_xxx),(r_xxxx,u_xxxx,e_xxxx),(r_t,u_t,e_t),(r_tx,u_tx,e_tx),(r_txx,u_txx,e_txx))
+r_xx' = d_xx'(u,r,r_x)
+u_xx' = d_xx'(u,u,u_x)
+e_xx' = d_xx'(u,e,e_x)
+r_xxx' = d_xxx'(u,r,r_x)
+u_xxx' = d_xxx'(u,u,u_x)
+e_xxx' = d_xxx'(u,e,e_x)
+u_xxxx' = 0
+u_xxxxx = d_xxxxx(u,u_x)
+
+p = pres(r,e)
+p_x = pres_x(r,e,r_x,e_x)
+p_xx = pres_xx(r,r_x,r_xx,e_x,e_xx)
+p_xxx = pres_xxx(r,r_x,r_xx,r_xxx,e,e_x,e_xx,e_xxx)
+p_xxxx = pres_xxxx(r,r_x,r_xx,r_xxx,r_xxxx,e,e_x,e_xx,e_xxx,e_xxxx)
+p_t = pres_t(r,e,r_t,e_t)
+p_tx = pres_tx(r,r_t,r_x,r_tx,e,e_t,e_x,e_tx)
+p_txx = pres_txx(r,r_t,r_x,r_tx,r_xx,r_txx,e,e_t,e_x,e_tx,e_xx,e_txx)
+cs = sound_speed(r,p)
+P = visc(cs,r,u_x)
+P_x = vis_x(cs,r,r_x,u_x,u_xx)
+P_xx = visc_xx(cs,r,r_x,r_xx,u_x,u_xx,u_xxx)
+P_xxx = visc_xxx(cs,r,r_x,r_xx,r_xxx,u_x,u_xx,u_xxx,u_xxxx)
+P_xxxx = visc_xxxx(cs,r,r_x,r_xx,r_xxx,r_xxxx,u_x,u_xx,u_xxx,u_xxxx,u_xxxxx)
+P_t = visc_t(cs,r,r_t,u_x,u_xx)
+P_tx = visc_tx(cs,r,r_t,r_x,r_tx,u_x,u_tx,u_xx,u_txx)
+u_txxx = velc_txxx(r,r_x,r_xx',r_xxx',u,u_x,u_xx',u_xxx',u_xxxx',p_x,p_xx,p_xxx,p_xxxx,P_x,P_xx,P_xxx,P_xxxx)
+P_txx = visc_txx(cs,r,r_t,r_x,r_tx,r_xx,r_txx,u_x,u_tx,u_xx,u_txx,u_xxx,u_txxx)
+
+r_ttx = -r_txx*u - r_xx'*u_t - 2*r_tx*u_x - 2*r_x*u_tx - r_t*u_xx' - r*u_txx
+u_ttx = -2*u_tx*u_x - u_t*u_xx' - u*u_txx - (p_txx + P_txx)/r + (p_xx + P_xx)*r_t/r/r + (p_tx + P_tx)*r_x/r/r + (p_x + P_x)*r_tx/r/r + (p_x + P_x)*r_x*r_t/r/r/r
+e_ttx = -u_tx*e_x - u_x*e_tx - u_t*e_xx' - u*e_txx - (p_tx + P_tx)*u_x/r - (p_x + P_x)*u_tx/r + (p_x + P_x)*u_x*r_t/r/r - (p_t + P_t)*u_xx/r - (p + P)*u_txx/r + (p + P)*u_xx*r_t/r/r + (p_t + P_t)*u_x*r_x/r/r + (p + P)*u_tx*r_x/r/r + (p + P)*u_x*r_tx/r/r - 2*(p + P)*u_x*r_x*r_t/r/r/r
+end function
+
+begin function init() \
+  returns (r, u, e, r_x, u_x, e_x, \
+           r_xx, r_xxx, u_xx, u_xxx, e_xx, e_xxx)
+
+    double [] :: r = 0, u = 0, e = 0, r_x = 0, u_x = 0, e_x = 0, \
+                 r_xx = 0, r_xxx = 0, u_xx = 0, u_xxx = 0, e_xx = 0, e_xxx = 0
+end function
+
+begin function step(r, u, e, r_x, u_x, e_x, \
+                    r_xx, r_xxx, u_xx, u_xxx, e_xx, e_xxx) \
+  returns (r', u', e', r_x', u_x', e_x', \
+           r_xx', r_xxx', u_xx', u_xxx', e_xx', e_xxx')
+
+    q = (r,u,e)
+    q_x = (r_x,u_x,e_x)
+
+    r_xx' = d_xx(r,r_x)
+    r_xxx' = d_xxx(r,r_x)
+    r_xxxx' = d_xxxx(r,r_x)
+    u_xx' = d_xx(u,u_x)
+    u_xxx' = d_xxx(u,u_x)
+    u_xxxx' = d_xxxx(u,u_x)
+    e_xx' = d_xx(e,e_x)
+    e_xxx' = d_xxx(e,e_x)
+    e_xxxx' = d_xxxx(e,e_x)
+
+    q_xx = (r_xx',u_xx',e_xx')
+    q_xxx = (r_xxx',u_xxx',e_xxx')
+    q_xxxx = (r_xxxx',u_xxxx',e_xxxx')
+    
+    q_t = d_t(q,q_x,q_xx)
+    q_tx = d_tx(q,q_x,q_xx,q_xxx)
+    q_txx = d_txx(q,q_x,q_xx,q_xxx,q_xxxx)
+
+    q_tt = d_tt(q,q_x,q_xx,q_t,q_tx,q_txx)
+    q_ttx = d_ttx(q,q_x,q_xx,q_xxx,q_xxxx,q_t,q_tx,q_txx)
+
+    q' = q + dt*q_t/2 + dt*dt*q_tt/2
+    q_x' = q_x + dt*q_tx/2 + dt*dt*q_ttx/2
+
+    (r',u',e') = q'
+    (r_x',u_x',e_x') = q_x'
+end function
