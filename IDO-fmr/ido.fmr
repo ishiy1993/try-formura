@@ -181,8 +181,8 @@ begin function step(r, u, e, r_x, u_x, e_x, \
     q_tt = d_tt(q,q_x,q_xx,q_t,q_tx,q_txx)
     q_ttx = d_ttx(q,q_x,q_xx,q_xxx,q_xxxx,q_t,q_tx,q_txx)
 
-    q' = q + dt*q_t/2 + dt*dt*q_tt/2
-    q_x' = q_x + dt*q_tx/2 + dt*dt*q_ttx/2
+    q' = q + dt*q_t + dt*dt*q_tt/2
+    q_x' = q_x + dt*q_tx + dt*dt*q_ttx/2
 
     (r',u',e') = q'
     (r_x',u_x',e_x') = q_x'
