@@ -8,6 +8,10 @@ echo ${TARGET}
 echo ${vis}
 echo ${n}
 
+pre='double el = e[2];\ndouble er = e[201];\ndouble e_xl = e_x[2];\ndouble e_xr = e_x[201];\ndouble e_xxl = e_xx[2];\ndouble e_xxr = e_xx[201];\ndouble e_xxxl = e_xxx[2];\ndouble e_xxxr = e_xxx[201];\ndouble rl = r[2];\ndouble rr = r[201];\ndouble r_xl = r_x[2];\ndouble r_xr = r_x[201];\ndouble r_xxl = r_xx[2];\ndouble r_xxr = r_xx[201];\ndouble r_xxxl = r_xxx[2];\ndouble r_xxxr = r_xxx[201];\ndouble ul = u[2];\ndouble ur = u[201];\ndouble u_xl = u_x[2];\ndouble u_xr = u_x[201];\ndouble u_xxl = u_xx[2];\ndouble u_xxr = u_xx[201];\ndouble u_xxxl = u_xxx[2];\ndouble u_xxxr = u_xxx[201];\n'
+
+post='e[2] = el;\ne[201]=er;\ne_x[2]=e_xl;\ne_x[201]=e_xr;\ne_xx[2]=e_xxl;\ne_xx[201]=e_xxr;\ne_xxx[2]=e_xxxl;\ne_xxx[201]=e_xxxr;\nr[2]=rl;\nr[201]=rr;\nr_x[2]=r_xl;\nr_x[201]=r_xr;\nr_xx[2]=r_xxl;\nr_xx[201]=r_xxr;\nr_xxx[2]=r_xxxl;\nr_xxx[201]=r_xxxr;\nu[2]=ul;\nu[201]=ur;\nu_x[2]=u_xl;\nu_x[201]=u_xr;\nu_xx[2]=u_xxl;\nu_xx[201]=u_xxr;\nu_xxx[2]=u_xxxl;\nu_xxx[201]=u_xxxr;\n'
+
 sed -i -E "s/(TARGET :=).*/\1 ${TARGET}/" Makefile
 sed -i -E "s/(double :: a = ).*/\1${vis}/" ${TARGET}.fmr
 sed -i -E "s/(double a = ).*/\1${vis};/" ${TARGET}-main.cpp
@@ -17,6 +21,8 @@ grep 'double a' ${TARGET}-main.cpp
 echo $(date +"%F %T") $(grep "intra" ${TARGET}.yaml)
 make clean
 time make ${TARGET}.c
+sed -i "54a${pre}" ${TARGET}.c
+sed -i "97a${post}" ${TARGET}.c
 time make -j ${n}
 time make run
 echo $(date +"%F %T")
