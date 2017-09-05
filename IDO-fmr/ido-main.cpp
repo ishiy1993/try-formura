@@ -19,53 +19,23 @@ double eL = pL/(gm-1)/rL;
 double eR = pR/(gm-1)/rR;
 
 double f(double x, double l, double r) {
-  if (x >= d && x <= x0 - d) {
+  if (x <= x0) {
     return l;
-  } else if (x >= x0 + d && x <= 2*x0 - d) {
-    return r;
-  } else if (x > x0 - d && x < x0 + d) {
-    return (l - r)*pow((x - x0)/d,3)/4.0 - 3.0*(l - r)*(x-x0)/d/4.0 + (l + r)/2.0;
-  } else if (x < d) {
-    return (r - l)*pow(x/d,3)/4.0 - 3.0*(r - l)*x/d/4.0 + (r + l)/2.0;
   } else {
-    return (r - l)*pow((x - 2*x0)/d,3)/4.0 - 3.0*(r - l)*(x-2*x0)/d/4.0 + (r + l)/2.0;
+    return r;
   }
 }
 
 double f_x(double x, double l, double r) {
-  if (x > x0 - d && x < x0 + d) {
-    return 3.0*(l - r)/4.0/d * (pow((x-x0)/d,2) - 1.0);
-  } else if (x < d) {
-    return 3.0*(r - l)/4.0/d * (pow(x/d,2) - 1.0);
-  } else if (x > 2*x0 - d) {
-    return 3.0*(r - l)/4.0/d * (pow((x-2*x0)/d,2) - 1.0);
-  } else {
-    return 0.0;
-  }
+  return 0.0;
 }
 
 double f_xx(double x, double l, double r) {
-  if (x > x0 - d && x < x0 + d) {
-    return 3.0*(l - r)/2.0/d/d/d * (x - x0);
-  } else if (x < d) {
-    return 3.0*(r - l)/2.0/d/d/d * x;
-  } else if (x > 2*x0 - d) {
-    return 3.0*(r - l)/2.0/d/d/d * (x - 2*x0);
-  } else {
-    return 0.0;
-  }
+  return 0.0;
 }
 
 double f_xxx(double x, double l, double r) {
-  if (x > x0 - d && x < x0 + d) {
-    return 3.0*(l - r)/2.0/d/d/d;
-  } else if (x < d) {
-    return 3.0*(l - r)/2.0/d/d/d;
-  } else if (x > 2*x0 - d) {
-    return 3.0*(l - r)/2.0/d/d/d;
-  } else {
-    return 0.0;
-  }
+  return 0.0;
 }
 
 double dens(double x) {
@@ -159,7 +129,7 @@ int main(int argc, char **argv) {
       printf("it = %d: t = %f\n", navi.time_step, t);
 
       char fn[256];
-      sprintf(fn, "data/%s-3-%.2f-%.3f-%d-%.2f-%f.dat", problem, cfl, a, NX, d, t);
+      sprintf(fn, "data/%s-0-%.2f-%.3f-%d-%.2f-%f.dat", problem, cfl, a, NX, d, t);
       FILE *fp = fopen(fn, "w");
 
       for(int ix = navi.lower_x; ix < navi.upper_x; ++ix) {
@@ -172,6 +142,6 @@ int main(int argc, char **argv) {
     Formura_Forward(&navi);
   }
 
-  printf("params: %s-3-%.2f-%.3f-%d-%.2f", problem, cfl, a, NX, d);
+  printf("params: %s-0-%.2f-%.3f-%d-%.2f", problem, cfl, a, NX, d);
   MPI_Finalize();
 }
