@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_my_rank);
   Formura_Init(&navi, MPI_COMM_WORLD);
 
-  double cfl = 0.05;
+  double cfl = 0.1;
   double a = 0.0;
   double dx = (xr-xl)/NX;
   double dt = cfl*dx;

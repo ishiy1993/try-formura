@@ -1,7 +1,7 @@
 dimension :: 1
 axes :: x
 
-double :: cfl = 0.05
+double :: cfl = 0.1
 double :: h = 2.0/NX
 double :: dt = cfl*h
 double :: gm = 1.4
