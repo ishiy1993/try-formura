@@ -30,7 +30,7 @@ pres_t = fun(r,e,r_t,e_t) (gm-1)*(r_t*e + r*e_t)
 pres_tx = fun(r,r_t,r_x,r_tx,e,e_t,e_x,e_tx) (gm-1)*(r_tx*e + r_x*e_t + r_t*e_x + r*e_tx)
 pres_txx = fun(r,r_t,r_x,r_tx,r_xx,r_txx,e,e_t,e_x,e_tx,e_xx,e_txx) (gm-1)*(r_txx*e + r_xx*e_t + 2*r_tx*e_x + 2*r_x*e_tx + r_t*e_xx + r*e_txx)
 
-visc = fun(cs,r,u_x) alpha(u_x)*cs*u_x/r
+visc = fun(cs,r,u_x) alpha(u_x)*cs*u_x*r
 vis_x = fun(cs,r,r_x,u_x,u_xx) alpha(u_x)*cs*(r_x*u_x + r*u_xx)
 visc_xx = fun(cs,r,r_x,r_xx,u_x,u_xx,u_xxx) alpha(u_x)*cs*(r_xx*u_x + 2*r_x*u_xx + r*u_xxx)
 visc_xxx = fun(cs,r,r_x,r_xx,r_xxx,u_x,u_xx,u_xxx,u_xxxx) alpha(u_x)*cs*(r_xxx*u_x + 3*r_xx*u_xx + 3*r_x*u_xxx + r*u_xxxx)
